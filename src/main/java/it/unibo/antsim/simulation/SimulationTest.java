@@ -2,6 +2,10 @@ package it.unibo.antsim.simulation;
 
 import it.unibo.antsim.model.Environment;
 
+/**
+ * SimulationTest is a simple test class to verify the functionality
+ * of the SimulationEngine and Environment classes.
+ */
 public class SimulationTest {
     public static void main(String[] args) throws InterruptedException {
         Environment environment = new Environment(10,10);

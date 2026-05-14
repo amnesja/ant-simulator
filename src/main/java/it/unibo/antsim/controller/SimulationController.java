@@ -5,6 +5,9 @@ import javafx.animation.KeyFrame;
 import javafx.animation.Timeline;
 import javafx.util.Duration;
 
+/**
+ * SimulationController is responsible for controlling the simulation flow, including starting, stopping,
+ */
 public class SimulationController {
     private final SimulationEngine engine;
     private Timeline timeline;

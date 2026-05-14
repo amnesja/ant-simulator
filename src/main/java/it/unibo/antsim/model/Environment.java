@@ -1,5 +1,9 @@
 package it.unibo.antsim.model;
 
+/**
+ * Class representing the environment of the ant simulation.
+ * It contains a grid of cells and provides methods to update the environment.
+ */
 public class Environment {
     private final Grid grid;
 
