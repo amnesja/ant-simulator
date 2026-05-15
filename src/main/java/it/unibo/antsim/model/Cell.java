@@ -14,22 +14,39 @@ public class Cell {
     }
 
     public CellType getType(){
+
         return type;
     }
 
     public void setType(CellType type){
+
         this.type = type;
     }
 
     public double getPheromoneLevel() {
+
         return pheromoneLevel;
     }
 
     public void addPheromoneLevel(double value){
+
         this.pheromoneLevel += value;
     }
 
     public void evaporate(double rate){
+
         this.pheromoneLevel -= rate;
+    }
+
+    public boolean hasFood(){
+        return type == CellType.FOOD;
+    }
+
+    public boolean isObstacle(){
+        return type == CellType.OBSTACLE;
+    }
+
+    public boolean isNest(){
+        return type == CellType.NEST;
     }
 }

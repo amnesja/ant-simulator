@@ -27,14 +27,23 @@ public class Grid {
     }
 
     public Cell getCell(int x, int y) {
+
         return cells[x][y];
     }
 
     public int getWidth() {
+
         return width;
     }
 
     public int getHeight() {
         return height;
+    }
+
+    /**
+     * Checks if the given coordinates are within the bounds of the grid.
+     */
+    public boolean isInside(int x, int y) {
+        return x >= 0 && x < width && y >= 0 && y < height;
     }
 }
