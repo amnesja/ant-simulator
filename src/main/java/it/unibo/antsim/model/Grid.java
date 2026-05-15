@@ -1,5 +1,10 @@
 package it.unibo.antsim.model;
 
+/**
+ * Class representing the grid of the environment.
+ * The grid is a 2D array of cells, where each cell can be empty, contain food, be an obstacle, or be the nest.
+ * The grid provides methods to access and modify the cells, as well as to get the dimensions of the grid.
+ */
 public class Grid {
     private final int width;
     private final int height;
