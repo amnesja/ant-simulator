@@ -15,7 +15,7 @@ public class SimulationEngine {
     private List<FakeAgents> agents = new ArrayList<>(); // Placeholder for actual Ant agents
     private final SimulationState state =  new SimulationState();
     private boolean running = false;
-    private int foodGenerationInterval = 10;
+    private int foodGenerationInterval = 100;
     private long stepCount = 0;
 
     public SimulationEngine(Environment environment) {
@@ -39,7 +39,7 @@ public class SimulationEngine {
         if (!running) return;
 
         if(stepCount % foodGenerationInterval == 0 && stepCount > 0) {
-            environment.generateFood(2);
+            environment.generateFood(1);
         }
 
         updateAgents();
@@ -101,5 +101,9 @@ public class SimulationEngine {
 
     public SimulationState getState() {
         return state;
+    }
+
+    public Environment getEnvironment() {
+        return environment;
     }
 }

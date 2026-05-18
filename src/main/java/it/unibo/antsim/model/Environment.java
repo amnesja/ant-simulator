@@ -77,22 +77,62 @@ public class Environment {
         grid.getCell(x, y).setType(CellType.EMPTY);
     }
 
+    public int countCellsOfType(CellType type) {
+        int count = 0;
+        for (int x = 0; x < grid.getWidth(); x++) {
+            for (int y = 0; y < grid.getHeight(); y++) {
+                if (grid.getCell(x, y).getType() == type) {
+                    count++;
+                }
+            }
+        }
+        return count;
+    }
     public void generateObstacle(int obstacleCount) {
+        int width = grid.getWidth();
+        int height = grid.getHeight();
+        int totalCells = width * height;
+
+        // non superare il 30% della griglia con ostacoli (configurabile)
+        int maxObstaclesAllowed = (int) (totalCells * 0.10);
+        int currentObstacles = countCellsOfType(CellType.OBSTACLE);
+        int canAdd = Math.max(0, maxObstaclesAllowed - currentObstacles);
+        int toGenerate = Math.min(obstacleCount, canAdd);
+        if (toGenerate <= 0) {
+            // niente da fare
+            return;
+        }
+
+        int generated = 0;
         int attempts = 0;
-        int maxAttempts = obstacleCount * 10;
+        int maxAttempts = toGenerate * 20; // più tentativi per trovare celle libere
 
-        for(int generated = 0; generated < obstacleCount && attempts < maxAttempts; attempts++){
-            int  x = RANDOM.nextInt(grid.getWidth());
-            int y = RANDOM.nextInt(grid.getHeight());
-
+        while (generated < toGenerate && attempts < maxAttempts) {
+            int x = RANDOM.nextInt(width);
+            int y = RANDOM.nextInt(height);
+            attempts++;
             Cell cell = grid.getCell(x, y);
-            if (cell.getType() == CellType.EMPTY && !(x == 0 && y == 0)) {
+            if (cell.getType() == CellType.EMPTY && !cell.isNest()) {
                 cell.setType(CellType.OBSTACLE);
                 generated++;
             }
         }
+
+        System.out.println("generateObstacle: requested=" + obstacleCount +
+                " added=" + generated + " current=" + (currentObstacles + generated));
     }
 
+    public void resetObstacles(int obstacleCount) {
+        for (int x = 0; x < grid.getWidth(); x++) {
+            for (int y = 0; y < grid.getHeight(); y++) {
+                Cell cell = grid.getCell(x, y);
+                if (cell.getType() == CellType.OBSTACLE) {
+                    cell.setType(CellType.EMPTY);
+                }
+            }
+        }
+        generateObstacle(obstacleCount);
+    }
     public boolean isNest(int x, int y) {
         return grid.getCell(x, y).isNest();
     }
