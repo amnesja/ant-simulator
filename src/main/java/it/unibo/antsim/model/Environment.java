@@ -2,6 +2,7 @@ package it.unibo.antsim.model;
 
 import java.util.List;
 import java.util.ArrayList;
+import java.util.Random;
 
 /**
  * Class representing the environment of the ant simulation.
@@ -9,9 +10,14 @@ import java.util.ArrayList;
  */
 public class Environment {
     private final Grid grid;
+    private static final Random RANDOM = new Random();
 
     public Environment(int width, int height) {
         this.grid = new Grid(width, height);
+    }
+
+    public Grid getGrid() {
+        return grid;
     }
 
     public Cell getCell(int x, int y) {
@@ -47,12 +53,44 @@ public class Environment {
         }
     }
 
+    public void generateFood(int foodCount) {
+        int attempts = 0;
+        int maxAttempts = foodCount * 10;
+
+        for(int generated = 0; generated < foodCount && attempts < maxAttempts; attempts++){
+            int x = RANDOM.nextInt(grid.getWidth());
+            int y = RANDOM.nextInt(grid.getHeight());
+
+            Cell cell = grid.getCell(x, y);
+            if (cell.getType() == CellType.EMPTY && !(x == 0 && y == 0)) {
+                cell.setType(CellType.FOOD);
+                generated++;
+            }
+        }
+    }
+
     public boolean isFood(int x, int y) {
         return grid.getCell(x, y).hasFood();
     }
 
     public void removeFood(int x, int y) {
         grid.getCell(x, y).setType(CellType.EMPTY);
+    }
+
+    public void generateObstacle(int obstacleCount) {
+        int attempts = 0;
+        int maxAttempts = obstacleCount * 10;
+
+        for(int generated = 0; generated < obstacleCount && attempts < maxAttempts; attempts++){
+            int  x = RANDOM.nextInt(grid.getWidth());
+            int y = RANDOM.nextInt(grid.getHeight());
+
+            Cell cell = grid.getCell(x, y);
+            if (cell.getType() == CellType.EMPTY && !(x == 0 && y == 0)) {
+                cell.setType(CellType.OBSTACLE);
+                generated++;
+            }
+        }
     }
 
     public boolean isNest(int x, int y) {

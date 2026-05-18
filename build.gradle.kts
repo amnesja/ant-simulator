@@ -22,7 +22,7 @@ repositories {
 java {
     toolchain {
         // Java version used to compile and run the project
-        languageVersion.set(JavaLanguageVersion.of(21))
+        languageVersion.set(JavaLanguageVersion.of(26))
     }
 }
 
@@ -64,4 +64,11 @@ val main: String by project
 application {
     // Define the main class for the application
     mainClass.set("it.unibo.antsim.Main")
+}
+
+tasks.named<JavaExec>("run").configure {
+    jvmArgs = listOf(
+        "--module-path", classpath.asPath,
+        "--add-modules", "javafx.base,javafx.controls,javafx.fxml,javafx.graphics,javafx.swing"
+    )
 }
