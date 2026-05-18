@@ -10,43 +10,31 @@ import it.unibo.antsim.model.Environment;
  */
 public class SimulationTest {
     public static void main(String[] args) throws InterruptedException {
-        /*Environment environment = new Environment(10,10);
+        System.out.println("\n--- ENGINE TEST ---");
+
+        Environment environment = new Environment(5, 5);
+
+        // metto cibo in una posizione
+        environment.getCell(2, 2).setType(CellType.FOOD);
+
+        // crea engine
         SimulationEngine engine = new SimulationEngine(environment);
 
+        // avvia
         engine.start();
 
+        // esegui step
         for (int i = 0; i < 10; i++) {
             engine.step();
+
             System.out.println("Step: " + engine.getStepCount());
-            Thread.sleep(500);
-        }*/
 
-        Environment env = new Environment(5, 5);
+            // stampa posizione agenti (fake)
+            for (FakeAgents agent : engine.getAgents()) {
+                System.out.println("Agent at: (" + agent.getX() + ", " + agent.getY() + ")");
+            }
 
-        // Metto cibo
-        env.getCell(2, 2).setType(CellType.FOOD);
-
-        System.out.println("Is food at (2,2): " + env.isFood(2, 2));
-
-        // Test neighbors
-        System.out.println("\nNeighbors of (2,2):");
-        for (Cell c : env.getNeighbors(2, 2)) {
-            System.out.println(c.getType());
+            Thread.sleep(300);
         }
-
-        // Test rimozione cibo
-        env.removeFood(2, 2);
-        System.out.println("\nAfter removal:");
-        System.out.println("Is food at (2,2): " + env.isFood(2, 2));
-
-        // Test feromoni
-        env.addPheromone(1, 1, 10.0);
-        System.out.println("\nPheromone before update: " +
-                env.getCell(1,1).getPheromoneLevel());
-
-        env.update();
-
-        System.out.println("Pheromone after update: " +
-                env.getCell(1,1).getPheromoneLevel());
     }
 }

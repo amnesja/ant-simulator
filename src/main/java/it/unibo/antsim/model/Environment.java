@@ -14,6 +14,10 @@ public class Environment {
         this.grid = new Grid(width, height);
     }
 
+    public Grid getGrid() {
+        return grid;
+    }
+
     public Cell getCell(int x, int y) {
         return grid.getCell(x, y);
     }
