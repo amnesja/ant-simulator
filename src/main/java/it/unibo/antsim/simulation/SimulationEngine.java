@@ -13,12 +13,11 @@ public class SimulationEngine {
     private final Environment environment;
     private List<FakeAgents> agents = new ArrayList<>(); // Placeholder for actual Ant agents
     private boolean running = false;
+    private int foodGenerationInterval = 10;
     private long stepCount = 0;
 
     public SimulationEngine(Environment environment) {
         this.environment = environment;
-        agents.add(new FakeAgents(0, 0)); // Adding a fake agent for testingg
-        agents.add(new FakeAgents(0, 0));
     }
 
     public void start() {
@@ -35,16 +34,28 @@ public class SimulationEngine {
 
     public void step() {
         if (!running) return;
+
+        if(stepCount % foodGenerationInterval == 0 && stepCount > 0) {
+            environment.generateFood(2);
+        }
+
         updateAgents();
         updateEnvironment();
         handleInteractions();
         stepCount++;
     }
 
+    public void setFoodGenerationInterval(int foodGenerationInterval) {
+        this.foodGenerationInterval = foodGenerationInterval;
+    }
+
     public void updateEnvironment() {
         environment.update();
     }
 
+    public void addAgent(FakeAgents agent) {
+        agents.add(agent);
+    }
     public void updateAgents() {
         for (FakeAgents agent : agents) {
             agent.move(environment);

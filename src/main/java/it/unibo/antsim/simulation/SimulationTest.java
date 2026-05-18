@@ -14,10 +14,19 @@ public class SimulationTest {
         env.getCell(0, 0).setType(CellType.NEST);
         env.getCell(2, 2).setType(CellType.FOOD);
 
+        //Cibo iniziale
+        env.generateFood(3);
         SimulationEngine engine = new SimulationEngine(env);
+        //Aggiunta agenti
+        engine.addAgent(new FakeAgents(0, 0));
+        engine.addAgent(new FakeAgents(0, 0));
+        engine.addAgent(new FakeAgents(0, 0));
+        //Cibo
+        engine.setFoodGenerationInterval(10);
+
         engine.start();
 
-        for (int i = 0; i < 40; i++) {
+        for (int i = 0; i < 50; i++) {
 
             engine.step();
 

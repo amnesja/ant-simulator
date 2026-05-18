@@ -35,7 +35,10 @@ public class Cell {
 
     public void evaporate(double rate){
 
-        this.pheromoneLevel -= rate;
+        this.pheromoneLevel *= rate;
+        if(this.pheromoneLevel < 0.0){
+            this.pheromoneLevel = 0.0;
+        }
     }
 
     public boolean hasFood(){
