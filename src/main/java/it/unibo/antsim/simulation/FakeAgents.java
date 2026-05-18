@@ -24,9 +24,11 @@ public class FakeAgents {
         int newx = x + dx[dir];
         int newy = y + dy[dir];
 
-        if(env.getGrid().isInside(newx,newy)){
-            x = newx;
-            y = newy;
+        if(env.getGrid().isInside(newx,newy)) {
+            if(!env.getCell(newx,newy).isObstacle()){ //if not obstacle
+                x = newx;
+                y = newy;
+            }
         }
     }
 

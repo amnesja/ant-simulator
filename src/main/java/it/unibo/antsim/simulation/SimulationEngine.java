@@ -44,8 +44,8 @@ public class SimulationEngine {
 
         updateAgents();
         updateEnvironment();
-        handleInteractions();
         stepCount++;
+        handleInteractions();
     }
 
     public void setFoodGenerationInterval(int foodGenerationInterval) {
