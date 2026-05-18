@@ -1,38 +1,29 @@
 package it.unibo.antsim.simulation;
 
-import it.unibo.antsim.model.Cell;
 import it.unibo.antsim.model.CellType;
 import it.unibo.antsim.model.Environment;
 
-/**
- * SimulationTest is a simple test class to verify the functionality
- * of the SimulationEngine and Environment classes.
- */
 public class SimulationTest {
+
     public static void main(String[] args) throws InterruptedException {
-        System.out.println("\n--- ENGINE TEST ---");
 
-        Environment environment = new Environment(5, 5);
+        System.out.println("\n--- ENGINE + INTERACTION TEST ---");
 
-        // metto cibo in una posizione
-        environment.getCell(2, 2).setType(CellType.FOOD);
+        Environment env = new Environment(5, 5);
 
-        // crea engine
-        SimulationEngine engine = new SimulationEngine(environment);
+        env.getCell(0, 0).setType(CellType.NEST);
+        env.getCell(2, 2).setType(CellType.FOOD);
 
-        // avvia
+        SimulationEngine engine = new SimulationEngine(env);
         engine.start();
 
-        // esegui step
-        for (int i = 0; i < 10; i++) {
+        for (int i = 0; i < 40; i++) {
+
             engine.step();
 
-            System.out.println("Step: " + engine.getStepCount());
+            System.out.println("STEP: " + engine.getStepCount());
 
-            // stampa posizione agenti (fake)
-            for (FakeAgents agent : engine.getAgents()) {
-                System.out.println("Agent at: (" + agent.getX() + ", " + agent.getY() + ")");
-            }
+            AsciiRenderer.render(env, engine.getAgents());
 
             Thread.sleep(300);
         }

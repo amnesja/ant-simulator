@@ -17,8 +17,8 @@ public class SimulationEngine {
 
     public SimulationEngine(Environment environment) {
         this.environment = environment;
-        agents.add(new FakeAgents(2, 2)); // Adding a fake agent for testing
-        agents.add(new FakeAgents(3, 3));
+        agents.add(new FakeAgents(0, 0)); // Adding a fake agent for testingg
+        agents.add(new FakeAgents(0, 0));
     }
 
     public void start() {
@@ -36,12 +36,12 @@ public class SimulationEngine {
     public void step() {
         if (!running) return;
         updateAgents();
-        updateEnvironvemt();
+        updateEnvironment();
         handleInteractions();
         stepCount++;
     }
 
-    public void updateEnvironvemt() {
+    public void updateEnvironment() {
         environment.update();
     }
 
@@ -56,10 +56,16 @@ public class SimulationEngine {
         // global states update (aggiornamento stati globali)
         // interaction between ants (interazione tra formiche)
         for (FakeAgents agent : agents) {
-            if(environment.isFood(agent.getX(), agent.getY())){
+            if (!agent.isCarryingFood() && environment.isFood(agent.getX(), agent.getY())) {
+                agent.pickFood();
                 environment.removeFood(agent.getX(), agent.getY());
-                System.out.println("Food collected by agent at ("
-                        + agent.getX() + ", " + agent.getY() + ")");            }
+                System.out.println("Food collected by agent at (" + agent.getX() + ", " + agent.getY() + ")");
+            }
+
+            if (agent.isCarryingFood() && environment.isNest(agent.getX(), agent.getY())) {
+                agent.dropFood();
+                System.out.println("Food delivered to nest!");
+            }
         }
     }
 
