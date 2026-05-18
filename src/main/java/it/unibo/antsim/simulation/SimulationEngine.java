@@ -1,6 +1,7 @@
 package it.unibo.antsim.simulation;
 
 import it.unibo.antsim.model.Environment;
+import it.unibo.antsim.model.SimulationState;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -12,6 +13,7 @@ import java.util.List;
 public class SimulationEngine {
     private final Environment environment;
     private List<FakeAgents> agents = new ArrayList<>(); // Placeholder for actual Ant agents
+    private final SimulationState state =  new SimulationState();
     private boolean running = false;
     private int foodGenerationInterval = 10;
     private long stepCount = 0;
@@ -30,6 +32,7 @@ public class SimulationEngine {
 
     public void reset() {
         this.stepCount = 0;
+        state.reset();
     }
 
     public void step() {
@@ -70,14 +73,18 @@ public class SimulationEngine {
             if (!agent.isCarryingFood() && environment.isFood(agent.getX(), agent.getY())) {
                 agent.pickFood();
                 environment.removeFood(agent.getX(), agent.getY());
+                state.incrementFoodCollected();
                 System.out.println("Food collected by agent at (" + agent.getX() + ", " + agent.getY() + ")");
             }
 
             if (agent.isCarryingFood() && environment.isNest(agent.getX(), agent.getY())) {
                 agent.dropFood();
+                state.incrementFoodAtNest();
                 System.out.println("Food delivered to nest!");
             }
         }
+        state.setStepCount(stepCount);
+        state.setAgentCount(agents.size());
     }
 
     public boolean isRunning() {
@@ -90,5 +97,9 @@ public class SimulationEngine {
 
     public List<FakeAgents> getAgents() {
         return agents;
+    }
+
+    public SimulationState getState() {
+        return state;
     }
 }

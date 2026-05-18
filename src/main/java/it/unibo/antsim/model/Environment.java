@@ -10,6 +10,7 @@ import java.util.Random;
  */
 public class Environment {
     private final Grid grid;
+    private static final Random RANDOM = new Random();
 
     public Environment(int width, int height) {
         this.grid = new Grid(width, height);
@@ -53,15 +54,15 @@ public class Environment {
     }
 
     public void generateFood(int foodCount) {
-        Random random = new Random();
-        int generated = 0;
+        int attempts = 0;
+        int maxAttempts = foodCount * 10;
 
-        while (generated < foodCount) {
-            int x = random.nextInt(grid.getWidth());
-            int y = random.nextInt(grid.getHeight());
+        for(int generated = 0; generated < foodCount && attempts < maxAttempts; attempts++){
+            int x = RANDOM.nextInt(grid.getWidth());
+            int y = RANDOM.nextInt(grid.getHeight());
 
             Cell cell = grid.getCell(x, y);
-            if(cell.getType() == CellType.EMPTY) {
+            if (cell.getType() == CellType.EMPTY && !(x == 0 && y == 0)) {
                 cell.setType(CellType.FOOD);
                 generated++;
             }
@@ -77,15 +78,15 @@ public class Environment {
     }
 
     public void generateObstacle(int obstacleCount) {
-        Random random = new Random();
-        int generated = 0;
+        int attempts = 0;
+        int maxAttempts = obstacleCount * 10;
 
-        while (generated < obstacleCount) {
-            int x = random.nextInt(grid.getWidth());
-            int y = random.nextInt(grid.getHeight());
+        for(int generated = 0; generated < obstacleCount && attempts < maxAttempts; attempts++){
+            int  x = RANDOM.nextInt(grid.getWidth());
+            int y = RANDOM.nextInt(grid.getHeight());
 
             Cell cell = grid.getCell(x, y);
-            if(cell.getType() == CellType.EMPTY) {
+            if (cell.getType() == CellType.EMPTY && !(x == 0 && y == 0)) {
                 cell.setType(CellType.OBSTACLE);
                 generated++;
             }
