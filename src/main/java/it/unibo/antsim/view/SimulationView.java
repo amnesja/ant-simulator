@@ -11,7 +11,7 @@ import java.util.List;
 
 public class SimulationView extends Canvas {
     private final Environment environment;
-    private final int cellSize = 30;
+    private final int cellSize = 10;
 
     public SimulationView(Environment environment, int width, int height) {
         this.environment = environment;
@@ -112,8 +112,8 @@ public class SimulationView extends Canvas {
         gc.fillOval(
                 x * cellSize + padding,
                 y * cellSize + padding,
-                cellSize - 2 * padding,
-                cellSize - 2 * padding
+                cellSize - 1 * padding,
+                cellSize - 1 * padding
         );
     }
 

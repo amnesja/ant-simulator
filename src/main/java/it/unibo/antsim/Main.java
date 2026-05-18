@@ -25,9 +25,9 @@ public class Main extends Application {
     @Override
     public void start(Stage primaryStage) {
         // Setup environment
-        Environment environment = new Environment(10, 10);
+        Environment environment = new Environment(80, 80);
         environment.getCell(0, 0).setType(CellType.NEST);
-        environment.generateFood(5);
+        environment.generateFood(100);
         environment.generateObstacle(3);
 
         // Setup engine
@@ -35,15 +35,15 @@ public class Main extends Application {
         engine.setFoodGenerationInterval(100);
 
         // Add agents
-        engine.addAgent(new FakeAgents(0, 0));
-        engine.addAgent(new FakeAgents(1, 1));
-        engine.addAgent(new FakeAgents(2, 2));
+        for(int i = 0; i < 100; i++){
+            engine.addAgent(new FakeAgents(0, 0));
+        }
 
         // Setup controller
         controller = new SimulationController(engine);
 
         // Setup view
-        view = new SimulationView(environment, 300, 300);
+        view = new SimulationView(environment, 800, 800);
 
         // Initial render
         view.render(engine.getAgents());
@@ -105,9 +105,10 @@ public class Main extends Application {
             controller.stop();
 
             engine.getAgents().clear();
-            engine.addAgent(new FakeAgents(0, 0));
-            engine.addAgent(new FakeAgents(1, 1));
-            engine.addAgent(new FakeAgents(2, 2));
+            for(int i = 0; i < 10; i++){
+                engine.addAgent(new FakeAgents(0, 0));
+            }
+
 
             Environment environment = engine.getEnvironment();
 
