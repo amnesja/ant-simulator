@@ -16,6 +16,7 @@ public class SimulationEngine {
     private final SimulationState state =  new SimulationState();
     private boolean running = false;
     private int foodGenerationInterval = 100;
+    private static final int FOOD_CONSUMPTION_PER_AGENT = 5;
     private long stepCount = 0;
 
     public SimulationEngine(Environment environment) {
@@ -30,9 +31,17 @@ public class SimulationEngine {
         this.running = false;
     }
 
-    public void reset() {
+    public void reset(int agentCount) {
         this.stepCount = 0;
+
         state.reset();
+        agents.clear();
+
+        for(int i = 0;i < agentCount; i++){
+            agents.add(new FakeAgents(0,0));
+        }
+
+        state.setAgentCount(agents.size());
     }
 
     public void step() {
@@ -72,9 +81,13 @@ public class SimulationEngine {
         for (FakeAgents agent : agents) {
             if (!agent.isCarryingFood() && environment.isFood(agent.getX(), agent.getY())) {
                 agent.pickFood();
-                environment.removeFood(agent.getX(), agent.getY());
-                state.incrementFoodCollected();
-                System.out.println("Food collected by agent at (" + agent.getX() + ", " + agent.getY() + ")");
+
+                int nearbyAgents = environment.countAgentsNearFood(agent.getX(), agent.getY(), agents);
+                int consumeAmount = FOOD_CONSUMPTION_PER_AGENT * nearbyAgents;
+
+                environment.consumeFood(agent.getX(), agent.getY(), consumeAmount);
+                state.incrementFoodPicked();
+                System.out.println("Food picked by agent at (" + agent.getX() + ", " + agent.getY() + ")");
             }
 
             if (agent.isCarryingFood() && environment.isNest(agent.getX(), agent.getY())) {
@@ -85,14 +98,6 @@ public class SimulationEngine {
         }
         state.setStepCount(stepCount);
         state.setAgentCount(agents.size());
-    }
-
-    public boolean isRunning() {
-        return running;
-    }
-
-    public long getStepCount() {
-        return stepCount;
     }
 
     public List<FakeAgents> getAgents() {

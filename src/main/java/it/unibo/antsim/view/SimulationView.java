@@ -11,7 +11,7 @@ import java.util.List;
 
 public class SimulationView extends Canvas {
     private final Environment environment;
-    private final int cellSize = 10;
+    private final int cellSize = 30;
 
     public SimulationView(Environment environment, int width, int height) {
         this.environment = environment;
@@ -96,7 +96,7 @@ public class SimulationView extends Canvas {
         }
     }
 
-    public void drawNest(GraphicsContext gc, int x, int y) {
+    private void drawNest(GraphicsContext gc, int x, int y) {
         gc.setFill(Color.BROWN);
         gc.fillRect(x * cellSize, y * cellSize, cellSize, cellSize);
 
@@ -106,14 +106,14 @@ public class SimulationView extends Canvas {
         gc.fillText("N", x * cellSize + cellSize / 3, y * cellSize + cellSize / 1.5);
     }
 
-    public void drawFood(GraphicsContext gc, int x, int y) {
+    private void drawFood(GraphicsContext gc, int x, int y) {
         gc.setFill(Color.GREEN);
         int padding = 5;
         gc.fillOval(
                 x * cellSize + padding,
                 y * cellSize + padding,
-                cellSize - 1 * padding,
-                cellSize - 1 * padding
+                cellSize - 3 * padding,
+                cellSize - 3 * padding
         );
     }
 

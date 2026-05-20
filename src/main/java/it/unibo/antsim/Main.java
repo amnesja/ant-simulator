@@ -3,7 +3,6 @@ package it.unibo.antsim;
 import it.unibo.antsim.controller.SimulationController;
 import it.unibo.antsim.model.CellType;
 import it.unibo.antsim.model.Environment;
-import it.unibo.antsim.simulation.AsciiRenderer;
 import it.unibo.antsim.simulation.FakeAgents;
 import it.unibo.antsim.simulation.SimulationEngine;
 import it.unibo.antsim.view.SimulationView;
@@ -25,17 +24,17 @@ public class Main extends Application {
     @Override
     public void start(Stage primaryStage) {
         // Setup environment
-        Environment environment = new Environment(80, 80);
+        Environment environment = new Environment(10, 10);
         environment.getCell(0, 0).setType(CellType.NEST);
-        environment.generateFood(100);
-        environment.generateObstacle(3);
+        environment.generateFood(1);
+        environment.generateObstacle(7);
 
         // Setup engine
         engine = new SimulationEngine(environment);
-        engine.setFoodGenerationInterval(100);
+        engine.setFoodGenerationInterval(1000);
 
         // Add agents
-        for(int i = 0; i < 100; i++){
+        for(int i = 0; i < 10; i++){
             engine.addAgent(new FakeAgents(0, 0));
         }
 
@@ -43,7 +42,7 @@ public class Main extends Application {
         controller = new SimulationController(engine);
 
         // Setup view
-        view = new SimulationView(environment, 800, 800);
+        view = new SimulationView(environment, 300, 300);
 
         // Initial render
         view.render(engine.getAgents());
@@ -59,9 +58,10 @@ public class Main extends Application {
         root.setBottom(controlPanel);
 
         // Top: Stats
-        statsLabel = new Label("Step: 0 | Food Collected: 0 | Food at Nest: 0 | Agents: 3");
+        statsLabel = new Label();
         statsLabel.setStyle("-fx-font-size: 14; -fx-padding: 10;");
         root.setTop(statsLabel);
+        updateStats();
 
         // Create scene
         Scene scene = new Scene(root, 400, 450);
@@ -102,29 +102,19 @@ public class Main extends Application {
         Button resetBtn = new Button("Reset");
         resetBtn.setStyle("-fx-font-size: 12; -fx-padding: 8 20;");
         resetBtn.setOnAction(e -> {
-            controller.stop();
-
-            engine.getAgents().clear();
-            for(int i = 0; i < 10; i++){
-                engine.addAgent(new FakeAgents(0, 0));
-            }
-
-
+            controller.reset(10);
             Environment environment = engine.getEnvironment();
 
             for(int x = 0; x < environment.getGrid().getWidth(); x++){
                 for(int y = 0; y < environment.getGrid().getHeight(); y++){
-                    if(environment.getGrid().getCell(x, y).getType() == CellType.FOOD){
-                        environment.getGrid().getCell(x, y).setType(CellType.EMPTY);
+                    if(environment.getCell(x, y).hasFood()){
+                        environment.removeFood(x, y);
                     }
                 }
             }
 
             environment.resetObstacles(3);
             environment.generateFood(5);
-
-            engine.reset();
-
             view.render(engine.getAgents());
             updateStats();
         });
@@ -149,10 +139,11 @@ public class Main extends Application {
     /**     * Update statistics label     */
     private void updateStats() {
         String stats = String.format(
-                "Step: %d | Food Collected: %d | Food at Nest: %d | Agents: %d",
+                "Step: %d | Food picked: %d | Food at Nest: %d | Food HP: %d | Agents: %d",
                 engine.getState().getStepCount(),
-                engine.getState().getFoodCollected(),
+                engine.getState().getFoodPicked(),
                 engine.getState().getFoodAtNest(),
+                engine.getEnvironment().getTotalFoodHP(),
                 engine.getState().getAgentCount()
         );
         statsLabel.setText(stats);
