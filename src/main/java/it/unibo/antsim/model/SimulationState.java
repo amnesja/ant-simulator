@@ -2,13 +2,13 @@ package it.unibo.antsim.model;
 
 public class SimulationState {
     private long stepCount;
-    private int foodCollected;
+    private int foodPicked;
     private int foodAtNest;
     private int agentCount;
 
     public SimulationState() {
         this.stepCount = 0;
-        this.foodCollected = 0;
+        this.foodPicked = 0;
         this.foodAtNest = 0;
         this.agentCount = 0;
     }
@@ -20,8 +20,8 @@ public class SimulationState {
         return stepCount;
     }
 
-    public int  getFoodCollected() {
-        return foodCollected;
+    public int  getFoodPicked() {
+        return foodPicked;
     }
 
     public int getFoodAtNest() {
@@ -39,8 +39,8 @@ public class SimulationState {
         this.stepCount = stepCount;
     }
 
-    public void incrementFoodCollected() {
-        this.foodCollected++;
+    public void incrementFoodPicked() {
+        this.foodPicked++;
     }
 
     public void incrementFoodAtNest() {
@@ -53,7 +53,7 @@ public class SimulationState {
 
     public void reset() {
         this.stepCount = 0;
-        this.foodCollected = 0;
+        this.foodPicked = 0;
         this.foodAtNest = 0;
     }
 
@@ -61,7 +61,7 @@ public class SimulationState {
     public String toString() {
         return "SimulationState{" +
                 "step=" + stepCount +
-                ", foodCollected=" + foodCollected +
+                ", foodPicked=" + foodPicked +
                 ", foodAtNest=" + foodAtNest +
                 ", agents=" + agentCount +
                 '}';

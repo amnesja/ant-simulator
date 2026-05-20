@@ -1,4 +1,4 @@
-/*
+
 plugins {
     // Apply the java plugin to add support for Java
     java
@@ -14,7 +14,6 @@ plugins {
      */
     id("com.gradleup.shadow") version "9.4.1"
     id("org.danilopianini.gradle-java-qa") version "1.178.0"
-    id("org.openjfx.javafxplugin") version "0.1.0"
 }
 
 repositories {
@@ -76,7 +75,8 @@ tasks.named<JavaExec>("run").configure {
         "--module-path", classpath.asPath,
         "--add-modules", "javafx.base,javafx.controls,javafx.fxml,javafx.graphics,javafx.swing"
     )
-}*/
+}
+/*
 plugins {
     java
     application
@@ -115,3 +115,4 @@ tasks.withType<Test> {
 application {
     mainClass.set("it.unibo.antsim.Main")
 }
+*/

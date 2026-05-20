@@ -38,9 +38,9 @@ public class SimulationController {
         timeline.pause();
     }
 
-    public void reset() {
-        timeline.stop();
-        engine.reset();
+    public void reset(int agentCount) {
+        stop();
+        engine.reset(agentCount);
     }
 
 }
