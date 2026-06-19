@@ -169,6 +169,24 @@ public class Environment {
         }
         generateObstacle(obstacleCount);
     }
+
+    public void resetDynamicElements(int obstacleCount, int foodCount) {
+        for (int x = 0; x < grid.getWidth(); x++) {
+            for (int y = 0; y < grid.getHeight(); y++) {
+                Cell cell = grid.getCell(x, y);
+                cell.evaporate(0.0);
+
+                if (!cell.isNest()) {
+                    cell.setType(CellType.EMPTY);
+                    cell.setFoodHP(0);
+                }
+            }
+        }
+
+        generateObstacle(obstacleCount);
+        generateFood(foodCount);
+    }
+
     public boolean isNest(int x, int y) {
         return grid.getCell(x, y).isNest();
     }

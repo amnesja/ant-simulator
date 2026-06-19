@@ -16,6 +16,10 @@ import javafx.scene.layout.HBox;
 import javafx.stage.Stage;
 
 public class Main extends Application {
+    private static final int INITIAL_AGENT_COUNT = 10;
+    private static final int INITIAL_FOOD_COUNT = 1;
+    private static final int INITIAL_OBSTACLE_COUNT = 7;
+
     private SimulationController controller;
     private SimulationEngine engine;
     private SimulationView view;
@@ -24,17 +28,17 @@ public class Main extends Application {
     @Override
     public void start(Stage primaryStage) {
         // Setup environment
-        Environment environment = new Environment(10, 10);
+        Environment environment = new Environment(15, 15);
         environment.getCell(0, 0).setType(CellType.NEST);
-        environment.generateFood(1);
-        environment.generateObstacle(7);
+        environment.generateFood(INITIAL_FOOD_COUNT);
+        environment.generateObstacle(INITIAL_OBSTACLE_COUNT);
 
         // Setup engine
         engine = new SimulationEngine(environment);
         engine.setFoodGenerationInterval(1000);
 
         // Add agents
-        for(int i = 0; i < 10; i++){
+        for(int i = 0; i < INITIAL_AGENT_COUNT; i++){
             engine.addAgent(new FakeAgents(0, 0));
         }
 
@@ -42,13 +46,14 @@ public class Main extends Application {
         controller = new SimulationController(engine);
 
         // Setup view
-        view = new SimulationView(environment, 300, 300);
+        view = new SimulationView(environment);
 
         // Initial render
         view.render(engine.getAgents());
 
         // Create UI layout
         BorderPane root = new BorderPane();
+        root.setStyle("-fx-background-color: #d7bd7d;");
 
         // Center: Canvas
         root.setCenter(view);
@@ -59,12 +64,12 @@ public class Main extends Application {
 
         // Top: Stats
         statsLabel = new Label();
-        statsLabel.setStyle("-fx-font-size: 14; -fx-padding: 10;");
+        statsLabel.setStyle("-fx-font-size: 14; -fx-padding: 10; -fx-background-color: #f3dfad;");
         root.setTop(statsLabel);
         updateStats();
 
         // Create scene
-        Scene scene = new Scene(root, 400, 450);
+        Scene scene = new Scene(root, 560, 620);
 
         // Setup window
         primaryStage.setTitle("Ant Simulator");
@@ -85,7 +90,7 @@ public class Main extends Application {
     private HBox createControlPanel() {
         HBox panel = new HBox(10);
         panel.setPadding(new Insets(10));
-        panel.setStyle("-fx-border-color: #cccccc; -fx-border-width: 1 0 0 0;");
+        panel.setStyle("-fx-background-color: #f3dfad; -fx-border-color: #b8934e; -fx-border-width: 1 0 0 0;");
 
         Button startBtn = new Button("Start");
         startBtn.setStyle("-fx-font-size: 12; -fx-padding: 8 20;");
@@ -102,19 +107,8 @@ public class Main extends Application {
         Button resetBtn = new Button("Reset");
         resetBtn.setStyle("-fx-font-size: 12; -fx-padding: 8 20;");
         resetBtn.setOnAction(e -> {
-            controller.reset(10);
-            Environment environment = engine.getEnvironment();
-
-            for(int x = 0; x < environment.getGrid().getWidth(); x++){
-                for(int y = 0; y < environment.getGrid().getHeight(); y++){
-                    if(environment.getCell(x, y).hasFood()){
-                        environment.removeFood(x, y);
-                    }
-                }
-            }
-
-            environment.resetObstacles(3);
-            environment.generateFood(5);
+            controller.reset(INITIAL_AGENT_COUNT);
+            engine.getEnvironment().resetDynamicElements(INITIAL_OBSTACLE_COUNT, INITIAL_FOOD_COUNT);
             view.render(engine.getAgents());
             updateStats();
         });
