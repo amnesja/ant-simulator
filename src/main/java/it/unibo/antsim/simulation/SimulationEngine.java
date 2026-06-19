@@ -14,7 +14,7 @@ public class SimulationEngine {
     private final Environment environment;
     private List<FakeAgents> agents = new ArrayList<>(); // Placeholder for actual Ant agents
     private final SimulationState state =  new SimulationState();
-    private boolean running = false;
+    private SimulationStatus status = SimulationStatus.STOPPED;
     private int foodGenerationInterval = 100;
     private static final int FOOD_CONSUMPTION_PER_AGENT = 5;
     private long stepCount = 0;
@@ -24,15 +24,28 @@ public class SimulationEngine {
     }
 
     public void start() {
-        this.running = true;
+        this.status = SimulationStatus.RUNNING;
+    }
+
+    public void pause() {
+        if (status == SimulationStatus.RUNNING) {
+            this.status = SimulationStatus.PAUSED;
+        }
+    }
+
+    public void resume() {
+        if (status == SimulationStatus.PAUSED) {
+            this.status = SimulationStatus.RUNNING;
+        }
     }
 
     public void stop() {
-        this.running = false;
+        this.status = SimulationStatus.STOPPED;
     }
 
     public void reset(int agentCount) {
         this.stepCount = 0;
+        this.status = SimulationStatus.STOPPED;
 
         state.reset();
         agents.clear();
@@ -45,7 +58,7 @@ public class SimulationEngine {
     }
 
     public void step() {
-        if (!running) return;
+        if (status != SimulationStatus.RUNNING) return;
 
         if(stepCount % foodGenerationInterval == 0 && stepCount > 0) {
             environment.generateFood(1);
@@ -110,5 +123,9 @@ public class SimulationEngine {
 
     public Environment getEnvironment() {
         return environment;
+    }
+
+    public SimulationStatus getStatus() {
+        return status;
     }
 }

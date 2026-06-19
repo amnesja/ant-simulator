@@ -1,5 +1,6 @@
 package it.unibo.antsim.view;
 
+import it.unibo.antsim.config.ViewConfig;
 import it.unibo.antsim.model.CellType;
 import it.unibo.antsim.model.Environment;
 import it.unibo.antsim.simulation.FakeAgents;
@@ -13,7 +14,7 @@ import java.util.Map;
 
 public class SimulationView extends Canvas {
     private final Environment environment;
-    private final int cellSize = 48;
+    private final int cellSize = ViewConfig.CELL_SIZE;
     private static final Color SAND = Color.web("#ead7a2");
     private static final Color SAND_ALT = Color.web("#e4cd91");
     private static final Color GRID_LINE = Color.rgb(120, 93, 54, 0.18);
