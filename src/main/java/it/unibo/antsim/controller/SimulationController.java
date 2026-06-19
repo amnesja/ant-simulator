@@ -29,18 +29,24 @@ public class SimulationController {
         timeline.play();
     }
 
+    public void resume() {
+        engine.resume();
+        timeline.play();
+    }
+
     public void stop() {
         engine.stop();
         timeline.stop();
     }
 
     public void pause() {
+        engine.pause();
         timeline.pause();
     }
 
-    public void reset() {
-        timeline.stop();
-        engine.reset();
+    public void reset(int agentCount) {
+        stop();
+        engine.reset(agentCount);
     }
 
 }

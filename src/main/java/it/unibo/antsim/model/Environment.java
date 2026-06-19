@@ -1,5 +1,7 @@
 package it.unibo.antsim.model;
 
+import it.unibo.antsim.simulation.FakeAgents;
+
 import java.util.List;
 import java.util.ArrayList;
 import java.util.Random;
@@ -11,6 +13,7 @@ import java.util.Random;
 public class Environment {
     private final Grid grid;
     private static final Random RANDOM = new Random();
+    private static final int DEFAULT_FOOD_HP = 100;
 
     public Environment(int width, int height) {
         this.grid = new Grid(width, height);
@@ -62,8 +65,9 @@ public class Environment {
             int y = RANDOM.nextInt(grid.getHeight());
 
             Cell cell = grid.getCell(x, y);
-            if (cell.getType() == CellType.EMPTY && !(x == 0 && y == 0)) {
+            if (cell.getType() == CellType.EMPTY) {
                 cell.setType(CellType.FOOD);
+                cell.setFoodHP(DEFAULT_FOOD_HP);
                 generated++;
             }
         }
@@ -73,24 +77,114 @@ public class Environment {
         return grid.getCell(x, y).hasFood();
     }
 
+    public void consumeFood(int x, int y, int amount) {
+        grid.getCell(x, y).consumeFood(amount);
+    }
     public void removeFood(int x, int y) {
-        grid.getCell(x, y).setType(CellType.EMPTY);
+        Cell cell  = grid.getCell(x, y);
+        cell.setFoodHP(0);
+
+    }
+
+    public int countCellsOfType(CellType type) {
+        int count = 0;
+        for (int x = 0; x < grid.getWidth(); x++) {
+            for (int y = 0; y < grid.getHeight(); y++) {
+                if (grid.getCell(x, y).getType() == type) {
+                    count++;
+                }
+            }
+        }
+        return count;
+    }
+
+    public int getTotalFoodHP() {
+        int totalFoodHP = 0;
+        for (int x = 0; x < grid.getWidth(); x++) {
+            for (int y = 0; y < grid.getHeight(); y++) {
+                Cell cell = grid.getCell(x, y);
+                if (cell.hasFood()) {
+                    totalFoodHP += cell.getFoodHP();
+                }
+            }
+        }
+        return totalFoodHP;
+    }
+
+    public int countAgentsNearFood(int x, int y, List<FakeAgents> agents) {
+        int count = 0;
+        List<Cell> neighbors = getNeighbors(x, y);
+
+        for(FakeAgents agent: agents){
+            if((agent.getX() == x && agent.getY() == y) ||
+               neighbors.contains(grid.getCell(agent.getX(), agent.getY()))) {
+                count++;
+            }
+        }
+        return count;
     }
 
     public void generateObstacle(int obstacleCount) {
+        int width = grid.getWidth();
+        int height = grid.getHeight();
+        int totalCells = width * height;
+
+        // non superare il 30% della griglia con ostacoli (configurabile)
+        int maxObstaclesAllowed = (int) (totalCells * 0.30);
+        int currentObstacles = countCellsOfType(CellType.OBSTACLE);
+        int canAdd = Math.max(0, maxObstaclesAllowed - currentObstacles);
+        int toGenerate = Math.min(obstacleCount, canAdd);
+        if (toGenerate <= 0) {
+            // niente da fare
+            return;
+        }
+
+        int generated = 0;
         int attempts = 0;
-        int maxAttempts = obstacleCount * 10;
+        int maxAttempts = toGenerate * 20; // più tentativi per trovare celle libere
 
-        for(int generated = 0; generated < obstacleCount && attempts < maxAttempts; attempts++){
-            int  x = RANDOM.nextInt(grid.getWidth());
-            int y = RANDOM.nextInt(grid.getHeight());
-
+        while (generated < toGenerate && attempts < maxAttempts) {
+            int x = RANDOM.nextInt(width);
+            int y = RANDOM.nextInt(height);
+            attempts++;
             Cell cell = grid.getCell(x, y);
-            if (cell.getType() == CellType.EMPTY && !(x == 0 && y == 0)) {
+            if (cell.getType() == CellType.EMPTY && !cell.isNest()) {
                 cell.setType(CellType.OBSTACLE);
                 generated++;
             }
         }
+
+        System.out.println("generateObstacle: requested=" + obstacleCount +
+                " added=" + generated + " current=" + (currentObstacles + generated));
+    }
+
+    public void resetObstacles(int obstacleCount) {
+        for (int x = 0; x < grid.getWidth(); x++) {
+            for (int y = 0; y < grid.getHeight(); y++) {
+                Cell cell = grid.getCell(x, y);
+                if (cell.getType() == CellType.OBSTACLE) {
+                    cell.setType(CellType.EMPTY);
+                }
+            }
+        }
+        generateObstacle(obstacleCount);
+    }
+
+    public void resetDynamicElements(int obstacleCount, int foodCount) {
+        for (int x = 0; x < grid.getWidth(); x++) {
+            for (int y = 0; y < grid.getHeight(); y++) {
+                Cell cell = grid.getCell(x, y);
+                cell.evaporate(0.0);
+
+                if (!cell.isNest()) {
+                    cell.setType(CellType.EMPTY);
+                    cell.setFoodHP(0);
+                }
+            }
+        }
+
+        generateObstacle(obstacleCount);
+        generateFood(foodCount);
     }
 
     public boolean isNest(int x, int y) {

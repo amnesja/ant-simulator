@@ -7,6 +7,7 @@ package it.unibo.antsim.model;
 public class Cell {
     private CellType type;
     private double pheromoneLevel;
+    private int foodHP = 0;
 
     public Cell(CellType type) {
         this.type = type;
@@ -43,6 +44,25 @@ public class Cell {
 
     public boolean hasFood(){
         return type == CellType.FOOD;
+    }
+
+    public int getFoodHP(){
+        return foodHP;
+    }
+
+    public void setFoodHP(int foodHP){
+        this.foodHP = Math.max(0, foodHP);
+        if(this.foodHP == 0){
+            setType(CellType.EMPTY);
+        }
+    }
+
+    public void consumeFood(int amount){
+        foodHP -= amount;
+        if(foodHP <= 0){
+            foodHP = 0;
+            setType(CellType.EMPTY);
+        }
     }
 
     public boolean isObstacle(){

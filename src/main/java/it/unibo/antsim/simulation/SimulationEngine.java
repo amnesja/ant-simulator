@@ -14,8 +14,9 @@ public class SimulationEngine {
     private final Environment environment;
     private List<FakeAgents> agents = new ArrayList<>(); // Placeholder for actual Ant agents
     private final SimulationState state =  new SimulationState();
-    private boolean running = false;
-    private int foodGenerationInterval = 10;
+    private SimulationStatus status = SimulationStatus.STOPPED;
+    private int foodGenerationInterval = 100;
+    private static final int FOOD_CONSUMPTION_PER_AGENT = 5;
     private long stepCount = 0;
 
     public SimulationEngine(Environment environment) {
@@ -23,23 +24,44 @@ public class SimulationEngine {
     }
 
     public void start() {
-        this.running = true;
+        this.status = SimulationStatus.RUNNING;
+    }
+
+    public void pause() {
+        if (status == SimulationStatus.RUNNING) {
+            this.status = SimulationStatus.PAUSED;
+        }
+    }
+
+    public void resume() {
+        if (status == SimulationStatus.PAUSED) {
+            this.status = SimulationStatus.RUNNING;
+        }
     }
 
     public void stop() {
-        this.running = false;
+        this.status = SimulationStatus.STOPPED;
     }
 
-    public void reset() {
+    public void reset(int agentCount) {
         this.stepCount = 0;
+        this.status = SimulationStatus.STOPPED;
+
         state.reset();
+        agents.clear();
+
+        for(int i = 0;i < agentCount; i++){
+            agents.add(new FakeAgents(0,0));
+        }
+
+        state.setAgentCount(agents.size());
     }
 
     public void step() {
-        if (!running) return;
+        if (status != SimulationStatus.RUNNING) return;
 
         if(stepCount % foodGenerationInterval == 0 && stepCount > 0) {
-            environment.generateFood(2);
+            environment.generateFood(1);
         }
 
         updateAgents();
@@ -72,9 +94,13 @@ public class SimulationEngine {
         for (FakeAgents agent : agents) {
             if (!agent.isCarryingFood() && environment.isFood(agent.getX(), agent.getY())) {
                 agent.pickFood();
-                environment.removeFood(agent.getX(), agent.getY());
-                state.incrementFoodCollected();
-                System.out.println("Food collected by agent at (" + agent.getX() + ", " + agent.getY() + ")");
+
+                int nearbyAgents = environment.countAgentsNearFood(agent.getX(), agent.getY(), agents);
+                int consumeAmount = FOOD_CONSUMPTION_PER_AGENT * nearbyAgents;
+
+                environment.consumeFood(agent.getX(), agent.getY(), consumeAmount);
+                state.incrementFoodPicked();
+                System.out.println("Food picked by agent at (" + agent.getX() + ", " + agent.getY() + ")");
             }
 
             if (agent.isCarryingFood() && environment.isNest(agent.getX(), agent.getY())) {
@@ -87,19 +113,19 @@ public class SimulationEngine {
         state.setAgentCount(agents.size());
     }
 
-    public boolean isRunning() {
-        return running;
-    }
-
-    public long getStepCount() {
-        return stepCount;
-    }
-
     public List<FakeAgents> getAgents() {
         return agents;
     }
 
     public SimulationState getState() {
         return state;
+    }
+
+    public Environment getEnvironment() {
+        return environment;
+    }
+
+    public SimulationStatus getStatus() {
+        return status;
     }
 }
