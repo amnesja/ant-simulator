@@ -1,4 +1,4 @@
-package it.unibo.antsim.model;
+package it.unibo.antsim.model.environment;
 
 /**
  * Class representing the grid of the environment.

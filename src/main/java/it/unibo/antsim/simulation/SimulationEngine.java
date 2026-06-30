@@ -1,10 +1,12 @@
 package it.unibo.antsim.simulation;
 
-import it.unibo.antsim.model.Environment;
+import it.unibo.antsim.model.environment.Environment;
 import it.unibo.antsim.model.SimulationState;
+import it.unibo.antsim.model.agent.Ant;
+import it.unibo.antsim.model.environment.Cell;
 
-import javax.print.attribute.standard.PrinterState;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 
 /**
@@ -13,7 +15,7 @@ import java.util.List;
  */
 public class SimulationEngine {
     private final Environment environment;
-    private List<FakeAgents> agents = new ArrayList<>(); // Placeholder for actual Ant agents
+    private final List<Ant> ants = new ArrayList<>();
     private final SimulationState state =  new SimulationState();
     private SimulationStatus status = SimulationStatus.STOPPED;
     private int foodGenerationInterval = 100;
@@ -49,13 +51,13 @@ public class SimulationEngine {
         this.status = SimulationStatus.STOPPED;
 
         state.reset();
-        agents.clear();
+        ants.clear();
 
         for(int i = 0;i < agentCount; i++){
-            agents.add(new FakeAgents(0,0));
+            ants.add(new Ant(0,0));
         }
 
-        state.setAgentCount(agents.size());
+        state.setAgentCount(ants.size());
     }
 
     public void step() {
@@ -79,12 +81,13 @@ public class SimulationEngine {
         environment.update();
     }
 
-    public void addAgent(FakeAgents agent) {
-        agents.add(agent);
+    public void addAnt(Ant ant) {
+        ants.add(ant);
     }
+
     public void updateAgents() {
-        for (FakeAgents agent : agents) {
-            agent.move(environment);
+        for (Ant ant : ants) {
+            ant.move(environment);
         }
     }
 
@@ -92,30 +95,43 @@ public class SimulationEngine {
         // food consumption (consumazione cibo)
         // global states update (aggiornamento stati globali)
         // interaction between ants (interazione tra formiche)
-        for (FakeAgents agent : agents) {
-            if (!agent.isCarryingFood() && environment.isFood(agent.getX(), agent.getY())) {
-                agent.pickFood();
+        for (Ant ant : ants) {
+            if (!ant.isCarryingFood() && environment.isFood(ant.getX(), ant.getY())) {
+                ant.pickFood();
 
-                int nearbyAgents = environment.countAgentsNearFood(agent.getX(), agent.getY(), agents);
-                int consumeAmount = FOOD_CONSUMPTION_PER_AGENT * nearbyAgents;
+                int nearbyAnts = countAntsNearFood(ant.getX(), ant.getY());
+                int consumeAmount = FOOD_CONSUMPTION_PER_AGENT * nearbyAnts;
 
-                environment.consumeFood(agent.getX(), agent.getY(), consumeAmount);
+                environment.consumeFood(ant.getX(), ant.getY(), consumeAmount);
                 state.incrementFoodPicked();
-                System.out.println("Food picked by agent at (" + agent.getX() + ", " + agent.getY() + ")");
+                System.out.println("Food picked by ant at (" + ant.getX() + ", " + ant.getY() + ")");
             }
 
-            if (agent.isCarryingFood() && environment.isNest(agent.getX(), agent.getY())) {
-                agent.dropFood();
+            if (ant.isCarryingFood() && environment.isNest(ant.getX(), ant.getY())) {
+                ant.dropFood();
                 state.incrementFoodAtNest();
                 System.out.println("Food delivered to nest!");
             }
         }
         state.setStepCount(stepCount);
-        state.setAgentCount(agents.size());
+        state.setAgentCount(ants.size());
     }
 
-    public List<FakeAgents> getAgents() {
-        return agents;
+    private int countAntsNearFood(int x, int y) {
+        int count = 0;
+        List<Cell> neighbors = environment.getNeighbors(x, y);
+
+        for (Ant ant : ants) {
+            if ((ant.getX() == x && ant.getY() == y)
+                    || neighbors.contains(environment.getCell(ant.getX(), ant.getY()))) {
+                count++;
+            }
+        }
+        return count;
+    }
+
+    public List<Ant> getAnts() {
+        return Collections.unmodifiableList(ants);
     }
 
     public SimulationState getState() {

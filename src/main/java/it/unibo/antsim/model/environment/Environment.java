@@ -1,6 +1,4 @@
-package it.unibo.antsim.model;
-
-import it.unibo.antsim.simulation.FakeAgents;
+package it.unibo.antsim.model.environment;
 
 import java.util.List;
 import java.util.ArrayList;
@@ -25,6 +23,25 @@ public class Environment {
 
     public Cell getCell(int x, int y) {
         return grid.getCell(x, y);
+    }
+
+    public List<Position> getWalkableNeighborPositions(int x, int y) {
+        List<Position> positions = new ArrayList<>();
+
+
+        int[] dx = {-1, 0, 1, 0};
+        int[] dy = {0, -1, 0, 1};
+
+        for (int i = 0; i < 4; i++) {
+            int newX = x + dx[i];
+            int newY = y + dy[i];
+
+            if (grid.isInside(newX, newY) && !grid.getCell(newX, newY).isObstacle()) {
+                positions.add(new Position(newX, newY));
+            }
+        }
+
+        return positions;
     }
 
     /**
@@ -109,19 +126,6 @@ public class Environment {
             }
         }
         return totalFoodHP;
-    }
-
-    public int countAgentsNearFood(int x, int y, List<FakeAgents> agents) {
-        int count = 0;
-        List<Cell> neighbors = getNeighbors(x, y);
-
-        for(FakeAgents agent: agents){
-            if((agent.getX() == x && agent.getY() == y) ||
-               neighbors.contains(grid.getCell(agent.getX(), agent.getY()))) {
-                count++;
-            }
-        }
-        return count;
     }
 
     public void generateObstacle(int obstacleCount) {
