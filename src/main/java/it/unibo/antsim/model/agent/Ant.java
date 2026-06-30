@@ -1,8 +1,11 @@
 package it.unibo.antsim.model.agent;
 
 import it.unibo.antsim.model.environment.Environment;
+import it.unibo.antsim.model.environment.Position;
 
 import java.util.Random;
+import java.util.Comparator;
+import java.util.List;
 
 public class Ant {
     private int x;
@@ -18,20 +21,19 @@ public class Ant {
     }
 
     public void move(Environment env){
-        int[] dx = {-1,0,1,0};
-        int[] dy = {0,-1,0,1};
+        List<Position> candidates = env.getWalkableNeighborPositions(x, y);
 
-        int dir = random.nextInt(4);
-
-        int newX = x + dx[dir];
-        int newY = y + dy[dir];
-
-        if(env.getGrid().isInside(newX,newY)) {
-            if(!env.getCell(newX,newY).isObstacle()){
-                x = newX;
-                y = newY;
-            }
+        if(candidates.isEmpty()){
+            return;
         }
+
+        Position nextPosition = switch (state){
+            case SEARCHING_FOOD -> chooseSearchingMove(env, candidates);
+            case RETURNING_TO_NEST -> chooseReturningMove(candidates);
+        };
+
+        x = nextPosition.x();
+        y = nextPosition.y();
     }
 
     public void pickFood(){
@@ -56,6 +58,30 @@ public class Ant {
 
     public int getY() {
         return y;
+    }
+
+    private Position chooseSearchingMove(Environment environment, List<Position> candidates) {
+        List<Position> foodPositions = candidates.stream()
+                .filter(position -> environment.isFood(position.x(), position.y()))
+                .toList();
+
+        if (!foodPositions.isEmpty()) {
+            return randomElement(foodPositions);
+        }
+
+        return randomElement(candidates);
+    }
+
+    private Position chooseReturningMove(List<Position> candidates) {
+        Position nestPosition = new Position(0, 0);
+
+        return candidates.stream()
+                .min(Comparator.comparingInt(position -> position.manhattanDistanceFrom(nestPosition)))
+                .orElseGet(() -> randomElement(candidates));
+    }
+
+    private Position randomElement(List<Position> positions) {
+        return positions.get(random.nextInt(positions.size()));
     }
 
 }

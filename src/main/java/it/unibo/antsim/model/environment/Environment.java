@@ -25,6 +25,24 @@ public class Environment {
         return grid.getCell(x, y);
     }
 
+    public List<Position> getWalkableNeighborPositions(int x, int y) {
+        List<Position> positions = new ArrayList<>();
+
+        int[] dx = {-1, 0, 1, 0};
+        int[] dy = {0, -1, 0, 1};
+
+        for (int i = 0; i < 4; i++) {
+            int newX = x + dx[i];
+            int newY = y + dy[i];
+
+            if (grid.isInside(newX, newY) && !grid.getCell(newX, newY).isObstacle()) {
+                positions.add(new Position(newX, newY));
+            }
+        }
+
+        return positions;
+    }
+
     /**
         * Returns a list of neighboring cells (up, down, left, right) for the given coordinates.
      */
