@@ -1,6 +1,4 @@
-package it.unibo.antsim.model;
-
-import it.unibo.antsim.simulation.FakeAgents;
+package it.unibo.antsim.model.environment;
 
 import java.util.List;
 import java.util.ArrayList;
@@ -109,19 +107,6 @@ public class Environment {
             }
         }
         return totalFoodHP;
-    }
-
-    public int countAgentsNearFood(int x, int y, List<FakeAgents> agents) {
-        int count = 0;
-        List<Cell> neighbors = getNeighbors(x, y);
-
-        for(FakeAgents agent: agents){
-            if((agent.getX() == x && agent.getY() == y) ||
-               neighbors.contains(grid.getCell(agent.getX(), agent.getY()))) {
-                count++;
-            }
-        }
-        return count;
     }
 
     public void generateObstacle(int obstacleCount) {
