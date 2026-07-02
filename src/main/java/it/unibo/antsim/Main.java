@@ -3,7 +3,6 @@ package it.unibo.antsim;
 import it.unibo.antsim.config.SimulationConfig;
 import it.unibo.antsim.config.ViewConfig;
 import it.unibo.antsim.controller.SimulationController;
-import it.unibo.antsim.model.environment.CellType;
 import it.unibo.antsim.model.environment.Environment;
 import it.unibo.antsim.model.agent.Ant;
 import it.unibo.antsim.simulation.SimulationEngine;
@@ -31,7 +30,6 @@ public class Main extends Application {
     public void start(Stage primaryStage) {
         // Setup environment
         Environment environment = new Environment(SimulationConfig.GRID_WIDTH, SimulationConfig.GRID_HEIGHT);
-        environment.getCell(0, 0).setType(CellType.NEST);
         environment.generateFood(SimulationConfig.INITIAL_FOOD_COUNT);
         environment.generateObstacle(SimulationConfig.INITIAL_OBSTACLE_COUNT);
 
