@@ -9,14 +9,32 @@ import java.util.Random;
  * It contains a grid of cells and provides methods to update the environment.
  */
 public class Environment {
+    private Position nestPosition;
     private final Grid grid;
     private static final Random RANDOM = new Random();
     private static final int DEFAULT_FOOD_HP = 100;
 
     public Environment(int width, int height) {
         this.grid = new Grid(width, height);
+        setNestPosition(new Position(0, 0));
     }
 
+    public void setNestPosition(Position position){
+        if(!grid.isInside(position.x(), position.y())){
+            throw new IllegalArgumentException("Nest position is out of bounds, it must be inside the grid!");
+        }
+
+        if(nestPosition != null && grid.isInside(nestPosition.x(), nestPosition.y())){
+            grid.getCell(nestPosition.x(), nestPosition.y()).setType(CellType.EMPTY);
+        }
+
+        nestPosition = position;
+        grid.getCell(position.x(), position.y()).setType(CellType.NEST);
+    }
+
+    public Position getNestPosition(){
+        return nestPosition;
+    }
     public Grid getGrid() {
         return grid;
     }

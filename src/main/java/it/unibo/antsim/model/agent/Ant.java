@@ -29,7 +29,7 @@ public class Ant {
 
         Position nextPosition = switch (state){
             case SEARCHING_FOOD -> chooseSearchingMove(env, candidates);
-            case RETURNING_TO_NEST -> chooseReturningMove(candidates);
+            case RETURNING_TO_NEST -> chooseReturningMove(env, candidates);
         };
 
         x = nextPosition.x();
@@ -72,8 +72,8 @@ public class Ant {
         return randomElement(candidates);
     }
 
-    private Position chooseReturningMove(List<Position> candidates) {
-        Position nestPosition = new Position(0, 0);
+    private Position chooseReturningMove(Environment environment, List<Position> candidates) {
+        Position nestPosition = environment.getNestPosition();
 
         return candidates.stream()
                 .min(Comparator.comparingInt(position -> position.manhattanDistanceFrom(nestPosition)))
