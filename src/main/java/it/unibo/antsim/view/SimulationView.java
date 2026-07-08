@@ -20,6 +20,8 @@ public class SimulationView extends Canvas {
     private static final Color GRID_LINE = Color.rgb(120, 93, 54, 0.18);
     private static final Color ANT_BODY = Color.web("#2b1a12");
     private static final Color ANT_DETAIL = Color.web("#140c08");
+    private static final Color FOOD_PHEROMONE_COLOR = Color.web("#4b0082");
+    private static final Color HOME_PHEROMONE_COLOR = Color.web("#1b74d1");
 
     public SimulationView(Environment environment) {
         this.environment = environment;
@@ -35,6 +37,7 @@ public class SimulationView extends Canvas {
 
         drawTerrain(gc);
         drawGrid(gc);
+        drawPheromones(gc);
         drawCells(gc);
         drawAnts(gc, ants);
     }
@@ -66,6 +69,29 @@ public class SimulationView extends Canvas {
         // Horizontal lines
         for(int y = 0; y <= gridHeight; y++){
             gc.strokeLine(0, y * cellSize, gridWidth * cellSize, y * cellSize);
+        }
+    }
+
+    private void drawPheromones(GraphicsContext gc) {
+        int gridWidth = environment.getGrid().getWidth();
+        int gridHeight = environment.getGrid().getHeight();
+
+        for (int x = 0; x < gridWidth; x++) {
+            for (int y = 0; y < gridHeight; y++) {
+                double level = environment.getCell(x, y).getPheromoneLevel();
+                if (level > 0) {
+                    double alpha = Math.min(level / 5.0, 0.45);
+                    gc.setFill(FOOD_PHEROMONE_COLOR.deriveColor(0, 1, 1, alpha));
+                    gc.fillRect(x * cellSize, y * cellSize, cellSize, cellSize);
+                }
+
+                double homeLevel = environment.getCell(x, y).getHomePheromoneLevel();
+                if (homeLevel > 0) {
+                    double alpha = Math.min(homeLevel / 5.0, 0.35);
+                    gc.setFill(HOME_PHEROMONE_COLOR.deriveColor(0, 1, 1, alpha));
+                    gc.fillRect(x * cellSize, y * cellSize, cellSize, cellSize);
+                }
+            }
         }
     }
 

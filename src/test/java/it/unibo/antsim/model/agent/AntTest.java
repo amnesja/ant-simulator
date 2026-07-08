@@ -51,6 +51,16 @@ class AntTest {
     }
 
     @Test
+    void searchingAntDepositsHomePheromoneBeforeMoving() {
+        Environment environment = new Environment(3, 3);
+        Ant ant = new Ant(1, 1);
+
+        ant.move(environment);
+
+        assertTrue(environment.getCell(1, 1).getHomePheromoneLevel() > 0);
+    }
+
+    @Test
     void returningAntMovesTowardConfiguredNest() {
         Environment environment = new Environment(4, 4);
         environment.setNestPosition(new Position(0, 0));
@@ -67,5 +77,20 @@ class AntTest {
                 newPosition.equals(new Position(0, 1))
                         || newPosition.equals(new Position(1, 0))
         );
+    }
+
+    @Test
+    void returningAntFollowsHomePheromoneTrail() {
+        Environment environment = new Environment(4, 4);
+        environment.setNestPosition(new Position(0, 0));
+        Ant ant = new Ant(2, 1);
+        ant.pickFood();
+
+        environment.addHomePheromone(2, 2, 5.0);
+
+        ant.move(environment);
+
+        assertEquals(2, ant.getX());
+        assertEquals(2, ant.getY());
     }
 }
