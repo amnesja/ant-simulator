@@ -1,4 +1,3 @@
-/*
 plugins {
     // Apply the java plugin to add support for Java
     java
@@ -23,13 +22,14 @@ repositories {
 java {
     toolchain {
         // Java version used to compile and run the project
-        languageVersion.set(JavaLanguageVersion.of(26))
+        languageVersion.set(JavaLanguageVersion.of(21))
     }
 }
 
 val javaFXModules = listOf("base", "controls", "fxml", "swing", "graphics")
 
 val supportedPlatforms = listOf("linux", "mac", "win") // All required for OOP
+
 dependencies {
     // Suppressions for SpotBugs
     compileOnly("com.github.spotbugs:spotbugs-annotations:4.9.8")
@@ -44,10 +44,6 @@ dependencies {
         for (module in javaFXModules) {
             implementation("org.openjfx:javafx-$module:$javaFxVersion:$platform")
         }
-    }
-
-    for (module in javaFXModules) {
-        implementation("org.openjfx:javafx-$module:$javaFxVersion:win")
     }
 
     // The BOM (Bill of Materials) synchronizes all the versions of Junit coherently.
@@ -67,53 +63,5 @@ val main: String by project
 
 application {
     // Define the main class for the application
-    mainClass.set("it.unibo.antsim.Main")
-}
-
-tasks.named<JavaExec>("run").configure {
-    jvmArgs = listOf(
-        "--module-path", classpath.asPath,
-        "--add-modules", "javafx.base,javafx.controls,javafx.fxml,javafx.graphics,javafx.swing"
-    )
-}
-*/
-
-
-plugins {
-    java
-    application
-    id("com.gradleup.shadow") version "9.4.1"
-    id("org.danilopianini.gradle-java-qa") version "1.178.0"
-    id("org.openjfx.javafxplugin") version "0.1.0"
-}
-
-repositories {
-    mavenCentral()
-}
-
-java {
-    toolchain {
-        languageVersion.set(JavaLanguageVersion.of(26))
-    }
-}
-
-javafx {
-    version = "23.0.2"
-    modules = listOf("javafx.controls", "javafx.fxml")
-}
-
-dependencies {
-    compileOnly("com.github.spotbugs:spotbugs-annotations:4.9.8")
-
-    testImplementation(platform("org.junit:junit-bom:6.0.3"))
-    testImplementation("org.junit.jupiter:junit-jupiter")
-    testRuntimeOnly("org.junit.platform:junit-platform-launcher")
-}
-
-tasks.withType<Test> {
-    useJUnitPlatform()
-}
-
-application {
     mainClass.set("it.unibo.antsim.Main")
 }
