@@ -14,7 +14,7 @@ public final class SimulationConfig {
     public static final double RETURN_DISTANCE_WEIGHT = 2.0;
     public static final double RETURN_HOME_PHEROMONE_WEIGHT = 1.0;
     public static final double RETURN_BACKTRACK_PENALTY = 3.0;
-    public static final boolean ENABLE_CLI_LOGS = true;
+    public static final boolean ENABLE_CLI_LOGS = false;
 
     private SimulationConfig() {
     }
