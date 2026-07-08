@@ -3,9 +3,8 @@ package it.unibo.antsim;
 import it.unibo.antsim.config.SimulationConfig;
 import it.unibo.antsim.config.ViewConfig;
 import it.unibo.antsim.controller.SimulationController;
-import it.unibo.antsim.model.CellType;
-import it.unibo.antsim.model.Environment;
-import it.unibo.antsim.simulation.FakeAgents;
+import it.unibo.antsim.model.environment.Environment;
+import it.unibo.antsim.model.agent.Ant;
 import it.unibo.antsim.simulation.SimulationEngine;
 import it.unibo.antsim.view.SimulationView;
 import javafx.application.Application;
@@ -31,7 +30,6 @@ public class Main extends Application {
     public void start(Stage primaryStage) {
         // Setup environment
         Environment environment = new Environment(SimulationConfig.GRID_WIDTH, SimulationConfig.GRID_HEIGHT);
-        environment.getCell(0, 0).setType(CellType.NEST);
         environment.generateFood(SimulationConfig.INITIAL_FOOD_COUNT);
         environment.generateObstacle(SimulationConfig.INITIAL_OBSTACLE_COUNT);
 
@@ -39,9 +37,9 @@ public class Main extends Application {
         engine = new SimulationEngine(environment);
         engine.setFoodGenerationInterval(SimulationConfig.FOOD_GENERATION_INTERVAL);
 
-        // Add agents
+        // Add ants
         for(int i = 0; i < SimulationConfig.INITIAL_AGENT_COUNT; i++){
-            engine.addAgent(new FakeAgents(0, 0));
+            engine.addAnt(new Ant(0, 0));
         }
 
         // Setup controller
@@ -51,7 +49,7 @@ public class Main extends Application {
         view = new SimulationView(environment);
 
         // Initial render
-        view.render(engine.getAgents());
+        view.render(engine.getAnts());
 
         // Create UI layout
         BorderPane root = new BorderPane();
@@ -124,7 +122,7 @@ public class Main extends Application {
                     SimulationConfig.INITIAL_OBSTACLE_COUNT,
                     SimulationConfig.INITIAL_FOOD_COUNT
             );
-            view.render(engine.getAgents());
+            view.render(engine.getAnts());
             updateStats();
             updateControls();
         });
@@ -162,7 +160,7 @@ public class Main extends Application {
         javafx.animation.AnimationTimer timer = new javafx.animation.AnimationTimer() {
             @Override
             public void handle(long now) {
-                view.render(engine.getAgents());
+                view.render(engine.getAnts());
                 updateStats();
             }
         };

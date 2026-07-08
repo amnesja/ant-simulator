@@ -1,7 +1,6 @@
-package it.unibo.antsim.model;
+package it.unibo.antsim.model.environment;
 
-import it.unibo.antsim.simulation.FakeAgents;
-
+import it.unibo.antsim.config.SimulationConfig;
 import java.util.List;
 import java.util.ArrayList;
 import java.util.Random;
@@ -11,20 +10,58 @@ import java.util.Random;
  * It contains a grid of cells and provides methods to update the environment.
  */
 public class Environment {
+    private Position nestPosition;
     private final Grid grid;
     private static final Random RANDOM = new Random();
     private static final int DEFAULT_FOOD_HP = 100;
 
     public Environment(int width, int height) {
         this.grid = new Grid(width, height);
+        setNestPosition(new Position(0, 0));
+        log("created grid=%dx%d nest=%s", width, height, nestPosition);
     }
 
+    public void setNestPosition(Position position){
+        if(!grid.isInside(position.x(), position.y())){
+            throw new IllegalArgumentException("Nest position is out of bounds, it must be inside the grid!");
+        }
+
+        if(nestPosition != null && grid.isInside(nestPosition.x(), nestPosition.y())){
+            grid.getCell(nestPosition.x(), nestPosition.y()).setType(CellType.EMPTY);
+        }
+
+        nestPosition = position;
+        grid.getCell(position.x(), position.y()).setType(CellType.NEST);
+        log("nest set at %s", position);
+    }
+
+    public Position getNestPosition(){
+        return nestPosition;
+    }
     public Grid getGrid() {
         return grid;
     }
 
     public Cell getCell(int x, int y) {
         return grid.getCell(x, y);
+    }
+
+    public List<Position> getWalkableNeighborPositions(int x, int y) {
+        List<Position> positions = new ArrayList<>();
+
+        int[] dx = {-1, 0, 1, 0};
+        int[] dy = {0, -1, 0, 1};
+
+        for (int i = 0; i < 4; i++) {
+            int newX = x + dx[i];
+            int newY = y + dy[i];
+
+            if (grid.isInside(newX, newY) && !grid.getCell(newX, newY).isObstacle()) {
+                positions.add(new Position(newX, newY));
+            }
+        }
+
+        return positions;
     }
 
     /**
@@ -51,16 +88,21 @@ public class Environment {
         // Evaporate pheromones in all cells
         for (int x = 0; x < grid.getWidth(); x++) {
             for (int y = 0; y < grid.getHeight(); y++) {
-                grid.getCell(x, y).evaporate(0.95); // Evaporation rate
+                grid.getCell(x, y).evaporate(SimulationConfig.PHEROMONE_EVAPORATION_RATE); // Evaporation rate
             }
         }
+        log("evaporated pheromones rate=%.2f foodTrailTotal=%.2f homeTrailTotal=%.2f",
+                SimulationConfig.PHEROMONE_EVAPORATION_RATE,
+                totalFoodPheromone(),
+                totalHomePheromone());
     }
 
     public void generateFood(int foodCount) {
         int attempts = 0;
         int maxAttempts = foodCount * 10;
+        int generated = 0;
 
-        for(int generated = 0; generated < foodCount && attempts < maxAttempts; attempts++){
+        for(; generated < foodCount && attempts < maxAttempts; attempts++){
             int x = RANDOM.nextInt(grid.getWidth());
             int y = RANDOM.nextInt(grid.getHeight());
 
@@ -68,9 +110,14 @@ public class Environment {
             if (cell.getType() == CellType.EMPTY) {
                 cell.setType(CellType.FOOD);
                 cell.setFoodHP(DEFAULT_FOOD_HP);
+                log("food generated at (%d,%d) hp=%d attempt=%d", x, y, DEFAULT_FOOD_HP, attempts + 1);
                 generated++;
+            } else {
+                log("food generation skipped at (%d,%d) type=%s attempt=%d", x, y, cell.getType(), attempts + 1);
             }
         }
+        log("generateFood requested=%d generated=%d attempts=%d totalFoodHP=%d",
+                foodCount, generated, attempts, getTotalFoodHP());
     }
 
     public boolean isFood(int x, int y) {
@@ -78,11 +125,16 @@ public class Environment {
     }
 
     public void consumeFood(int x, int y, int amount) {
+        int before = grid.getCell(x, y).getFoodHP();
         grid.getCell(x, y).consumeFood(amount);
+        int after = grid.getCell(x, y).getFoodHP();
+        log("food consumed at (%d,%d) amount=%d hp=%d->%d type=%s",
+                x, y, amount, before, after, grid.getCell(x, y).getType());
     }
     public void removeFood(int x, int y) {
         Cell cell  = grid.getCell(x, y);
         cell.setFoodHP(0);
+        log("food removed at (%d,%d)", x, y);
 
     }
 
@@ -111,19 +163,6 @@ public class Environment {
         return totalFoodHP;
     }
 
-    public int countAgentsNearFood(int x, int y, List<FakeAgents> agents) {
-        int count = 0;
-        List<Cell> neighbors = getNeighbors(x, y);
-
-        for(FakeAgents agent: agents){
-            if((agent.getX() == x && agent.getY() == y) ||
-               neighbors.contains(grid.getCell(agent.getX(), agent.getY()))) {
-                count++;
-            }
-        }
-        return count;
-    }
-
     public void generateObstacle(int obstacleCount) {
         int width = grid.getWidth();
         int height = grid.getHeight();
@@ -136,6 +175,8 @@ public class Environment {
         int toGenerate = Math.min(obstacleCount, canAdd);
         if (toGenerate <= 0) {
             // niente da fare
+            log("generateObstacle requested=%d added=0 current=%d maxAllowed=%d",
+                    obstacleCount, currentObstacles, maxObstaclesAllowed);
             return;
         }
 
@@ -151,19 +192,24 @@ public class Environment {
             if (cell.getType() == CellType.EMPTY && !cell.isNest()) {
                 cell.setType(CellType.OBSTACLE);
                 generated++;
+                log("obstacle generated at (%d,%d) attempt=%d", x, y, attempts);
+            } else {
+                log("obstacle skipped at (%d,%d) type=%s attempt=%d", x, y, cell.getType(), attempts);
             }
         }
 
-        System.out.println("generateObstacle: requested=" + obstacleCount +
-                " added=" + generated + " current=" + (currentObstacles + generated));
+        log("generateObstacle requested=%d added=%d current=%d",
+                obstacleCount, generated, currentObstacles + generated);
     }
 
     public void resetObstacles(int obstacleCount) {
+        log("resetObstacles requested=%d", obstacleCount);
         for (int x = 0; x < grid.getWidth(); x++) {
             for (int y = 0; y < grid.getHeight(); y++) {
                 Cell cell = grid.getCell(x, y);
                 if (cell.getType() == CellType.OBSTACLE) {
                     cell.setType(CellType.EMPTY);
+                    log("obstacle cleared at (%d,%d)", x, y);
                 }
             }
         }
@@ -171,6 +217,7 @@ public class Environment {
     }
 
     public void resetDynamicElements(int obstacleCount, int foodCount) {
+        log("resetDynamicElements obstacleCount=%d foodCount=%d", obstacleCount, foodCount);
         for (int x = 0; x < grid.getWidth(); x++) {
             for (int y = 0; y < grid.getHeight(); y++) {
                 Cell cell = grid.getCell(x, y);
@@ -192,6 +239,42 @@ public class Environment {
     }
 
     public void addPheromone(int x, int y, double value) {
+        double before = grid.getCell(x, y).getPheromoneLevel();
         grid.getCell(x, y).addPheromoneLevel(value);
+        log("food-pheromone added at (%d,%d) amount=%.2f level=%.2f->%.2f",
+                x, y, value, before, grid.getCell(x, y).getPheromoneLevel());
+    }
+
+    public void addHomePheromone(int x, int y, double value) {
+        double before = grid.getCell(x, y).getHomePheromoneLevel();
+        grid.getCell(x, y).addHomePheromoneLevel(value);
+        log("home-pheromone added at (%d,%d) amount=%.2f level=%.2f->%.2f",
+                x, y, value, before, grid.getCell(x, y).getHomePheromoneLevel());
+    }
+
+    private double totalFoodPheromone() {
+        double total = 0.0;
+        for (int x = 0; x < grid.getWidth(); x++) {
+            for (int y = 0; y < grid.getHeight(); y++) {
+                total += grid.getCell(x, y).getPheromoneLevel();
+            }
+        }
+        return total;
+    }
+
+    private double totalHomePheromone() {
+        double total = 0.0;
+        for (int x = 0; x < grid.getWidth(); x++) {
+            for (int y = 0; y < grid.getHeight(); y++) {
+                total += grid.getCell(x, y).getHomePheromoneLevel();
+            }
+        }
+        return total;
+    }
+
+    private void log(String format, Object... args) {
+        if (SimulationConfig.ENABLE_CLI_LOGS) {
+            System.out.printf("[ENV] %s%n", String.format(format, args));
+        }
     }
 }

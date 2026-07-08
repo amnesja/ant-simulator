@@ -1,9 +1,9 @@
 package it.unibo.antsim.view;
 
 import it.unibo.antsim.config.ViewConfig;
-import it.unibo.antsim.model.CellType;
-import it.unibo.antsim.model.Environment;
-import it.unibo.antsim.simulation.FakeAgents;
+import it.unibo.antsim.model.environment.CellType;
+import it.unibo.antsim.model.environment.Environment;
+import it.unibo.antsim.model.agent.Ant;
 import javafx.scene.canvas.Canvas;
 import javafx.scene.canvas.GraphicsContext;
 import javafx.scene.paint.Color;
@@ -20,6 +20,8 @@ public class SimulationView extends Canvas {
     private static final Color GRID_LINE = Color.rgb(120, 93, 54, 0.18);
     private static final Color ANT_BODY = Color.web("#2b1a12");
     private static final Color ANT_DETAIL = Color.web("#140c08");
+    private static final Color FOOD_PHEROMONE_COLOR = Color.web("#4b0082");
+    private static final Color HOME_PHEROMONE_COLOR = Color.web("#1b74d1");
 
     public SimulationView(Environment environment) {
         this.environment = environment;
@@ -27,7 +29,7 @@ public class SimulationView extends Canvas {
         this.setHeight(environment.getGrid().getHeight() * cellSize);
     }
 
-    public void render(List<FakeAgents> agents) {
+    public void render(List<Ant> ants) {
         GraphicsContext gc = this.getGraphicsContext2D();
 
         gc.setFill(SAND);
@@ -35,8 +37,9 @@ public class SimulationView extends Canvas {
 
         drawTerrain(gc);
         drawGrid(gc);
+        drawPheromones(gc);
         drawCells(gc);
-        drawAgents(gc, agents);
+        drawAnts(gc, ants);
     }
 
     private void drawTerrain(GraphicsContext gc) {
@@ -69,6 +72,29 @@ public class SimulationView extends Canvas {
         }
     }
 
+    private void drawPheromones(GraphicsContext gc) {
+        int gridWidth = environment.getGrid().getWidth();
+        int gridHeight = environment.getGrid().getHeight();
+
+        for (int x = 0; x < gridWidth; x++) {
+            for (int y = 0; y < gridHeight; y++) {
+                double level = environment.getCell(x, y).getPheromoneLevel();
+                if (level > 0) {
+                    double alpha = Math.min(level / 5.0, 0.45);
+                    gc.setFill(FOOD_PHEROMONE_COLOR.deriveColor(0, 1, 1, alpha));
+                    gc.fillRect(x * cellSize, y * cellSize, cellSize, cellSize);
+                }
+
+                double homeLevel = environment.getCell(x, y).getHomePheromoneLevel();
+                if (homeLevel > 0) {
+                    double alpha = Math.min(homeLevel / 5.0, 0.35);
+                    gc.setFill(HOME_PHEROMONE_COLOR.deriveColor(0, 1, 1, alpha));
+                    gc.fillRect(x * cellSize, y * cellSize, cellSize, cellSize);
+                }
+            }
+        }
+    }
+
     private void drawCells(GraphicsContext gc) {
         int gridWith = environment.getGrid().getWidth();
         int gridHeight = environment.getGrid().getHeight();
@@ -93,27 +119,27 @@ public class SimulationView extends Canvas {
         }
     }
 
-    private void drawAgents(GraphicsContext gc, List<FakeAgents> agents) {
-        Map<String, Integer> agentsPerCell = new HashMap<>();
+    private void drawAnts(GraphicsContext gc, List<Ant> ants) {
+        Map<String, Integer> antsPerCell = new HashMap<>();
         Map<String, Integer> drawnPerCell = new HashMap<>();
 
-        for (FakeAgents agent : agents) {
-            String key = cellKey(agent);
-            agentsPerCell.put(key, agentsPerCell.getOrDefault(key, 0) + 1);
+        for (Ant ant : ants) {
+            String key = cellKey(ant);
+            antsPerCell.put(key, antsPerCell.getOrDefault(key, 0) + 1);
         }
 
-        for(FakeAgents agent: agents){
-            String key = cellKey(agent);
-            int totalInCell = agentsPerCell.get(key);
+        for(Ant ant: ants){
+            String key = cellKey(ant);
+            int totalInCell = antsPerCell.get(key);
             int indexInCell = drawnPerCell.getOrDefault(key, 0);
             drawnPerCell.put(key, indexInCell + 1);
 
-            drawAnt(gc, agent, totalInCell, indexInCell);
+            drawAnt(gc, ant, totalInCell, indexInCell);
         }
     }
 
-    private String cellKey(FakeAgents agent) {
-        return agent.getX() + ":" + agent.getY();
+    private String cellKey(Ant ant) {
+        return ant.getX() + ":" + ant.getY();
     }
 
     private void drawNest(GraphicsContext gc, int x, int y) {
@@ -164,9 +190,9 @@ public class SimulationView extends Canvas {
         gc.strokeOval(baseX + 4, baseY + 8, cellSize - 8, cellSize - 11);
     }
 
-    private void drawAnt(GraphicsContext gc, FakeAgents agent, int totalInCell, int indexInCell){
-        double cx = agent.getX() * cellSize + cellSize / 2.0;
-        double cy = agent.getY() * cellSize + cellSize / 2.0;
+    private void drawAnt(GraphicsContext gc, Ant ant, int totalInCell, int indexInCell){
+        double cx = ant.getX() * cellSize + cellSize / 2.0;
+        double cy = ant.getY() * cellSize + cellSize / 2.0;
 
         if (totalInCell > 1) {
             double angle = 2 * Math.PI * indexInCell / totalInCell;
@@ -200,7 +226,7 @@ public class SimulationView extends Canvas {
         gc.strokeLine(11, -2, 16, -7);
         gc.strokeLine(11, 2, 16, 7);
 
-        if (agent.isCarryingFood()) {
+        if (ant.isCarryingFood()) {
             gc.setFill(Color.LIMEGREEN);
             gc.fillOval(-3, -13, 6, 6);
         }
