@@ -1,5 +1,7 @@
 package it.unibo.antsim.model.environment;
 
+import it.unibo.antsim.config.SimulationConfig;
+
 /**
  * Class representing a cell in the grid.
  * Each cell has a type (EMPTY, FOOD, OBSTACLE, NEST) and a pheromone level.
@@ -7,11 +9,13 @@ package it.unibo.antsim.model.environment;
 public class Cell {
     private CellType type;
     private double pheromoneLevel;
+    private double homePheromoneLevel;
     private int foodHP = 0;
 
     public Cell(CellType type) {
         this.type = type;
         this.pheromoneLevel = 0.0;
+        this.homePheromoneLevel = 0.0;
     }
 
     public CellType getType(){
@@ -29,16 +33,33 @@ public class Cell {
         return pheromoneLevel;
     }
 
+    public double getHomePheromoneLevel() {
+
+        return homePheromoneLevel;
+    }
+
     public void addPheromoneLevel(double value){
 
-        this.pheromoneLevel += value;
+        this.pheromoneLevel = Math.min(this.pheromoneLevel + value, SimulationConfig.MAX_PHEROMONE_LEVEL);
+    }
+
+    public void addHomePheromoneLevel(double value){
+
+        this.homePheromoneLevel = Math.min(
+                Math.max(this.homePheromoneLevel, value),
+                SimulationConfig.MAX_PHEROMONE_LEVEL
+        );
     }
 
     public void evaporate(double rate){
 
         this.pheromoneLevel *= rate;
+        this.homePheromoneLevel *= rate;
         if(this.pheromoneLevel < 0.0){
             this.pheromoneLevel = 0.0;
+        }
+        if(this.homePheromoneLevel < 0.0){
+            this.homePheromoneLevel = 0.0;
         }
     }
 
