@@ -1,6 +1,7 @@
 package it.unibo.antsim.view;
 
 import it.unibo.antsim.config.ViewConfig;
+import it.unibo.antsim.config.SimulationConfig;
 import it.unibo.antsim.model.environment.CellType;
 import it.unibo.antsim.model.environment.Environment;
 import it.unibo.antsim.model.agent.Ant;
@@ -20,8 +21,10 @@ public class SimulationView extends Canvas {
     private static final Color GRID_LINE = Color.rgb(120, 93, 54, 0.18);
     private static final Color ANT_BODY = Color.web("#2b1a12");
     private static final Color ANT_DETAIL = Color.web("#140c08");
-    private static final Color FOOD_PHEROMONE_COLOR = Color.web("#4b0082");
-    private static final Color HOME_PHEROMONE_COLOR = Color.web("#1b74d1");
+    private static final Color FOOD_PHEROMONE_CORE = Color.web("#d45a8c");
+    private static final Color FOOD_PHEROMONE_GLOW = Color.web("#7f4fc4");
+    private static final Color HOME_PHEROMONE_CORE = Color.web("#5dd6d6");
+    private static final Color HOME_PHEROMONE_GLOW = Color.web("#2f80c4");
 
     public SimulationView(Environment environment) {
         this.environment = environment;
@@ -36,9 +39,9 @@ public class SimulationView extends Canvas {
         gc.fillRect(0, 0, this.getWidth(), this.getHeight());
 
         drawTerrain(gc);
-        drawGrid(gc);
         drawPheromones(gc);
         drawCells(gc);
+        drawGrid(gc);
         drawAnts(gc, ants);
     }
 
@@ -55,6 +58,10 @@ public class SimulationView extends Canvas {
     }
 
     private void drawGrid(GraphicsContext gc) {
+        if (!ViewConfig.SHOW_GRID) {
+            return;
+        }
+
         gc.setStroke(GRID_LINE);
         gc.setLineWidth(0.5);
 
@@ -73,26 +80,85 @@ public class SimulationView extends Canvas {
     }
 
     private void drawPheromones(GraphicsContext gc) {
+        if (ViewConfig.PHEROMONE_VIEW_MODE == PheromoneViewMode.NONE) {
+            return;
+        }
+
         int gridWidth = environment.getGrid().getWidth();
         int gridHeight = environment.getGrid().getHeight();
 
         for (int x = 0; x < gridWidth; x++) {
             for (int y = 0; y < gridHeight; y++) {
-                double level = environment.getCell(x, y).getPheromoneLevel();
-                if (level > 0) {
-                    double alpha = Math.min(level / 5.0, 0.45);
-                    gc.setFill(FOOD_PHEROMONE_COLOR.deriveColor(0, 1, 1, alpha));
-                    gc.fillRect(x * cellSize, y * cellSize, cellSize, cellSize);
+                if (showsFoodPheromone()) {
+                    drawPheromoneHalo(
+                            gc,
+                            x,
+                            y,
+                            environment.getCell(x, y).getPheromoneLevel(),
+                            FOOD_PHEROMONE_CORE,
+                            FOOD_PHEROMONE_GLOW,
+                            0.46
+                    );
                 }
 
-                double homeLevel = environment.getCell(x, y).getHomePheromoneLevel();
-                if (homeLevel > 0) {
-                    double alpha = Math.min(homeLevel / 5.0, 0.35);
-                    gc.setFill(HOME_PHEROMONE_COLOR.deriveColor(0, 1, 1, alpha));
-                    gc.fillRect(x * cellSize, y * cellSize, cellSize, cellSize);
+                if (showsHomePheromone()) {
+                    drawPheromoneHalo(
+                            gc,
+                            x,
+                            y,
+                            environment.getCell(x, y).getHomePheromoneLevel(),
+                            HOME_PHEROMONE_CORE,
+                            HOME_PHEROMONE_GLOW,
+                            0.38
+                    );
                 }
             }
         }
+    }
+
+    private boolean showsFoodPheromone() {
+        return ViewConfig.PHEROMONE_VIEW_MODE == PheromoneViewMode.FOOD
+                || ViewConfig.PHEROMONE_VIEW_MODE == PheromoneViewMode.BOTH;
+    }
+
+    private boolean showsHomePheromone() {
+        return ViewConfig.PHEROMONE_VIEW_MODE == PheromoneViewMode.HOME
+                || ViewConfig.PHEROMONE_VIEW_MODE == PheromoneViewMode.BOTH;
+    }
+
+    private void drawPheromoneHalo(
+            GraphicsContext gc,
+            int x,
+            int y,
+            double level,
+            Color coreColor,
+            Color glowColor,
+            double maxAlpha
+    ) {
+        if (level <= 0) {
+            return;
+        }
+
+        double intensity = Math.min(level / SimulationConfig.MAX_PHEROMONE_LEVEL, 1.0);
+        double centerX = x * cellSize + cellSize / 2.0;
+        double centerY = y * cellSize + cellSize / 2.0;
+        double radius = cellSize * ViewConfig.PHEROMONE_SOFT_RADIUS_MULTIPLIER;
+
+        drawCenteredOval(gc, centerX, centerY, radius, glowColor, maxAlpha * 0.35 * intensity);
+        drawCenteredOval(gc, centerX, centerY, radius * 0.62, glowColor.interpolate(coreColor, 0.45), maxAlpha * 0.55 * intensity);
+        drawCenteredOval(gc, centerX, centerY, radius * 0.32, coreColor, maxAlpha * intensity);
+    }
+
+    private void drawCenteredOval(
+            GraphicsContext gc,
+            double centerX,
+            double centerY,
+            double radius,
+            Color color,
+            double alpha
+    ) {
+        gc.setFill(color.deriveColor(0, 1, 1, Math.min(alpha, 1.0)));
+        gc.fillOval(centerX - radius / 2.0, centerY - radius / 2.0, radius, radius);
     }
 
     private void drawCells(GraphicsContext gc) {
