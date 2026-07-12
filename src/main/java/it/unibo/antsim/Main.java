@@ -5,6 +5,7 @@ import it.unibo.antsim.config.ViewConfig;
 import it.unibo.antsim.controller.SimulationController;
 import it.unibo.antsim.model.agent.Ant;
 import it.unibo.antsim.model.environment.Environment;
+import it.unibo.antsim.model.environment.Position;
 import it.unibo.antsim.simulation.SimulationEngine;
 import it.unibo.antsim.view.ControlPanel;
 import it.unibo.antsim.view.SimulationView;
@@ -20,6 +21,7 @@ public class Main extends Application {
     private SimulationEngine engine;
     private SimulationView view;
     private StatsPanel statsPanel;
+    private ControlPanel controlPanel;
 
     @Override
     public void start(Stage primaryStage) {
@@ -42,6 +44,7 @@ public class Main extends Application {
         primaryStage.setScene(scene);
         primaryStage.show();
 
+        bindViewSize(scene);
         setupRenderingLoop();
         primaryStage.setOnCloseRequest(e -> {
             controller.stop();
@@ -50,9 +53,10 @@ public class Main extends Application {
     }
 
     private Environment createEnvironment() {
-        Environment environment = new Environment(SimulationConfig.GRID_WIDTH, SimulationConfig.GRID_HEIGHT);
-        environment.generateFood(SimulationConfig.INITIAL_FOOD_COUNT);
-        environment.generateObstacle(SimulationConfig.INITIAL_OBSTACLE_COUNT);
+        Environment environment = new Environment(SimulationConfig.WORLD_WIDTH, SimulationConfig.WORLD_HEIGHT);
+        environment.setNestPosition(new Position(SimulationConfig.NEST_X, SimulationConfig.NEST_Y));
+        environment.generateRockClusters();
+        environment.generateRandomFoodCluster();
         return environment;
     }
 
@@ -60,8 +64,9 @@ public class Main extends Application {
         SimulationEngine simulationEngine = new SimulationEngine(environment);
         simulationEngine.setFoodGenerationInterval(SimulationConfig.FOOD_GENERATION_INTERVAL);
 
+        Position nest = environment.getNestPosition();
         for (int i = 0; i < SimulationConfig.INITIAL_AGENT_COUNT; i++) {
-            simulationEngine.addAnt(new Ant(0, 0));
+            simulationEngine.addAnt(new Ant(nest.x(), nest.y()));
         }
 
         return simulationEngine;
@@ -70,13 +75,24 @@ public class Main extends Application {
     private BorderPane createLayout() {
         BorderPane root = new BorderPane();
 
-        ControlPanel controlPanel = new ControlPanel(controller, engine, view, statsPanel);
+        controlPanel = new ControlPanel(controller, engine, view, statsPanel);
 
         root.setCenter(view);
         root.setRight(controlPanel);
         root.setBottom(statsPanel);
 
         return root;
+    }
+
+    /**
+     * Binds the simulation canvas to fill the center area (right panel and
+     * bottom stats bar excluded). The camera follows the canvas size via a
+     * listener in SimulationView, so the world always occupies the whole view
+     * instead of being letterboxed into a square.
+     */
+    private void bindViewSize(Scene scene) {
+        view.widthProperty().bind(scene.widthProperty().subtract(controlPanel.widthProperty()));
+        view.heightProperty().bind(scene.heightProperty().subtract(statsPanel.heightProperty()));
     }
 
     private void setupRenderingLoop() {

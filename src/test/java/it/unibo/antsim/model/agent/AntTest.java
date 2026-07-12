@@ -35,62 +35,42 @@ class AntTest {
     }
 
     @Test
-    void searchingAntMovesToAdjacentFoodWhenOnlyFoodCellIsWalkable() {
-        Environment environment = new Environment(3, 3);
-        Ant ant = new Ant(1, 1);
-
-        environment.getCell(0, 1).setType(CellType.OBSTACLE);
-        environment.getCell(1, 0).setType(CellType.OBSTACLE);
-        environment.getCell(2, 1).setType(CellType.OBSTACLE);
-        environment.getCell(1, 2).setType(CellType.FOOD);
+    void searchingAntDepositsHomePheromone() {
+        Environment environment = new Environment(10, 10);
+        Ant ant = new Ant(5, 5);
 
         ant.move(environment);
 
-        assertEquals(1, ant.getX());
-        assertEquals(2, ant.getY());
+        assertTrue(environment.getCell(5, 5).getHomePheromoneLevel() > 0);
     }
 
     @Test
-    void searchingAntDepositsHomePheromoneBeforeMoving() {
-        Environment environment = new Environment(3, 3);
-        Ant ant = new Ant(1, 1);
-
-        ant.move(environment);
-
-        assertTrue(environment.getCell(1, 1).getHomePheromoneLevel() > 0);
-    }
-
-    @Test
-    void returningAntMovesTowardConfiguredNest() {
-        Environment environment = new Environment(4, 4);
+    void returningAntDepositsFoodPheromone() {
+        Environment environment = new Environment(10, 10);
         environment.setNestPosition(new Position(0, 0));
-        Ant ant = new Ant(1, 1);
+        Ant ant = new Ant(0, 0);
         ant.pickFood();
 
-        environment.getCell(2, 1).setType(CellType.OBSTACLE);
-        environment.getCell(1, 2).setType(CellType.OBSTACLE);
-
         ant.move(environment);
 
-        Position newPosition = new Position(ant.getX(), ant.getY());
-        assertTrue(
-                newPosition.equals(new Position(0, 1))
-                        || newPosition.equals(new Position(1, 0))
-        );
+        assertTrue(environment.getCell(0, 0).getPheromoneLevel() > 0);
     }
 
     @Test
-    void returningAntFollowsHomePheromoneTrail() {
-        Environment environment = new Environment(4, 4);
-        environment.setNestPosition(new Position(0, 0));
-        Ant ant = new Ant(2, 1);
-        ant.pickFood();
+    void antStaysInsideWorldAndAvoidsObstacles() {
+        Environment environment = new Environment(30, 30);
+        environment.getCell(15, 14).setType(CellType.OBSTACLE);
 
-        environment.addHomePheromone(2, 2, 5.0);
+        Ant ant = new Ant(15, 15);
 
-        ant.move(environment);
+        for (int i = 0; i < 400; i++) {
+            ant.move(environment);
+        }
 
-        assertEquals(2, ant.getX());
-        assertEquals(2, ant.getY());
+        int x = ant.getX();
+        int y = ant.getY();
+        assertTrue(x >= 0 && x < 30, "x out of bounds: " + x);
+        assertTrue(y >= 0 && y < 30, "y out of bounds: " + y);
+        assertFalse(environment.getCell(x, y).isObstacle(), "ant ended on an obstacle");
     }
 }

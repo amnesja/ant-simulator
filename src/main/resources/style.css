@@ -9,7 +9,20 @@
     -fx-border-width: 0 0 0 1;
     -fx-padding: 14;
     -fx-spacing: 10;
-    -fx-pref-width: 180;
+    -fx-pref-width: 220;
+}
+
+.control-panel .viewport {
+    -fx-background-color: transparent;
+}
+
+.param-section {
+    -fx-text-fill: #9fb3c8;
+    -fx-font-size: 11px;
+    -fx-font-weight: bold;
+    -fx-padding: 10 0 2 0;
+    -fx-border-color: #3a414d;
+    -fx-border-width: 1 0 0 0;
 }
 
 .stats-panel {
